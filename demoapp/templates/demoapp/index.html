@@ -1,2 +1,15 @@
-{{data}}
-<a href="{% url 'product_list' %}" class="button">product_list</a>
+{% extends 'demoapp/base.html' %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <div class="col-sm-11 col-md-4 mx-auto mt-5 px-3">
+            <h1 class="fw-light">Purchase List</h1>
+            <p class="fw-light">NAME</p>
+            <div>
+                <a href="{% url 'product_list' %}" class="btn btn-primary">Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

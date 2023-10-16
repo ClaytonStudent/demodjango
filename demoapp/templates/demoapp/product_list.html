@@ -1,5 +1,64 @@
-{% for item in items %}
-<p> {{item.id}} </p>
-<p> {{item.name}} </p>
-<p> {{item.price}} </p>
-{% endfor %}
+{% extends 'demoapp/base.html' %}
+
+{% block content %}
+<div>
+    <a href="{% url 'index' %}" class="btn btn-outline-primary my-3 mx-4">Go back</a>
+    <div class="row">
+        <div class="col-md-10 col-12 mx-auto mt-5">
+            <div class="d-flex justify-content-end">
+                <a href="{% url 'product_add' %}" class="btn btn-primary">+</a>
+            </div>
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Discount</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Note</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if items|length == 0 %}
+                    <tr>
+                        <th scope="row">-</th>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td></td>
+                    </tr>
+                    {% endif %}
+
+                    {% for item in items %}
+                    <tr>
+                        <th scope="row">{{ item.id }}</th>
+                        <td>
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }} Image" width="50" height="50">
+                            {% else %}
+                            <p>No image</p>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.discount }}</td>
+                        <td>{{ item.date }}</td>
+                        <td>{{ item.note }}</td>
+                        <td><a href="{% url 'product_update' item.id %}" class="btn btn-outline-secondary">Edit</a></td>
+                        <td><a href="{% url 'product_delete' item.id %}" class="btn btn-secondary">Delete</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
