@@ -12,9 +12,9 @@ def index(request):
 class ProductsList(View):
     def get(self,request):
         items = Product.objects.all()
-        context = {"data":"Dashboard Page of Django App","items":items}
+        total_price = sum(item.price_with_discount for item in items)
+        context = {"data":"Dashboard Page of Django App","items":items, 'total_price':total_price}
         return render(request,'demoapp/product_list.html', context)
-
 
 class ProductAdd(CreateView):
 	model = Product

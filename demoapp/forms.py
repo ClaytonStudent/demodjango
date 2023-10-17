@@ -9,7 +9,12 @@ class ProductForm(forms.ModelForm):
 		#fields =  '__all__'
 		fields = ('name','date','price','discount','note','image')
 		labels = {
-			'discount': 'Discount (%)',
+			'name': '名称',
+			'date': '日期',
+			'price': '原价',
+			'image': '图片',
+			'note': '备注',
+			'discount': '折扣',
 		}
 		widgets = {
             "date": DateInput(),

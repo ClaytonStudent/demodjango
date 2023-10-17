@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-    <a href="{% url 'index' %}" class="btn btn-outline-primary my-3 mx-4">Go back</a>
+    <a href="{% url 'index' %}" class="btn btn-outline-primary my-3 mx-4">返回</a>
     <div class="row">
         <div class="col-md-10 col-12 mx-auto mt-5">
             <div class="d-flex justify-content-end">
@@ -11,13 +11,13 @@
             <table class="table table-hover table-striped">
                 <thead>
                     <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Image</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Original Price</th>
-                        <th scope="col">Discount</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Note</th>
+                        <th scope="col">名称</th>
+                        <th scope="col">图片</th>
+                        <th scope="col">日期</th>
+                        <th scope="col">原价</th>
+                        <th scope="col">折扣</th>
+                        <th scope="col">折后价</th>
+                        <th scope="col">备注</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
                     </tr>
@@ -58,7 +58,10 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <h3 class="d-flex justify-content-end">总折后价: {{ total_price }}</h3>
         </div>
+
     </div>
+
 </div>
 {% endblock content %}

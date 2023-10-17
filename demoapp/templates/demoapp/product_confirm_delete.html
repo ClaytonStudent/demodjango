@@ -2,12 +2,12 @@
 
 {% block content %}
 <div>
-    <a href="{% url 'product_list' %}" class="btn btn-outline-primary my-3 mx-4">Go back</a>
+    <a href="{% url 'product_list' %}" class="btn btn-outline-primary my-3 mx-4">返回</a>
     <div class="row">
         <form method="POST" class="col-sm-11 col-md-4 mx-auto mt-5">
             {% csrf_token %}
-            <h1 class="fw-light">Are you sure you want to delete?</h1>
-            <p class="fw-light">This cannot be undone</p>
+            <h1 class="fw-light">确认删除?</h1>
+            <p class="fw-light">此操作不可撤销</p>
 
             <div>
                 <button class="btn btn-danger">Delete</button>
