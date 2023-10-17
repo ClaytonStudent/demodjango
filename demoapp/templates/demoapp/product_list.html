@@ -11,12 +11,12 @@
             <table class="table table-hover table-striped">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Image</th>
                         <th scope="col">Name</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Discount</th>
+                        <th scope="col">Image</th>
                         <th scope="col">Date</th>
+                        <th scope="col">Original Price</th>
+                        <th scope="col">Discount</th>
+                        <th scope="col">Price</th>
                         <th scope="col">Note</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
@@ -39,7 +39,7 @@
 
                     {% for item in items %}
                     <tr>
-                        <th scope="row">{{ item.id }}</th>
+                        <th scope="row">{{ item.name }}</th>
                         <td>
                             {% if item.image %}
                             <img src="{{ item.image.url }}" alt="{{ item.name }} Image" width="50" height="50">
@@ -47,10 +47,10 @@
                             <p>No image</p>
                             {% endif %}
                         </td>
-                        <td>{{ item.name }}</td>
+                        <td>{{ item.date }}</td>
                         <td>{{ item.price }}</td>
                         <td>{{ item.discount }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.price_with_discount }}</td>
                         <td>{{ item.note }}</td>
                         <td><a href="{% url 'product_update' item.id %}" class="btn btn-outline-secondary">Edit</a></td>
                         <td><a href="{% url 'product_delete' item.id %}" class="btn btn-secondary">Delete</a></td>
