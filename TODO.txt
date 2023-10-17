@@ -1,9 +1,2 @@
-Product Parameters:
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=4,decimal_places=2)
-    discount = models.DecimalField(max_digits=4,decimal_places=2)
-    price_with_discount = models.DecimalField(max_digits=4,decimal_places=2)
-    image = models.ImageField(upload_to='image/', default='image/default.jpg')
-    slug = models.SlugField(max_length=255)
-    date = models.DateTimeField()
-    note = models.TextField(blank=True)
+1. Calculate the price * discount (Discount is Percentage) 
+2. Rewrite the Date Picker Form.
