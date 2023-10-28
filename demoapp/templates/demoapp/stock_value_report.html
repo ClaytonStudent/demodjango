@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Please Upload Stock File</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        p {
+            margin-top: 50px;
+            font-size: 18px;
+        }
+    </style>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <h2>库存价值报告</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="myfile1">产品数据: 登陆博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</label>
+        <input type="file" name="myfile1">
+        <label for="myfile2">库存数据: 登陆博讯 - 销售 - 详细查询 - 库存</label>
+        <span>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价</span>
+        <input type="file" name="myfile2">
+        <button type="submit">Upload</button>
+    </form>
+    {% if data %}
+    {{ data.stock_value }}
+    {{ data.stock_value_without_iva }}
+    {% else %}
+    <p>No data to display.</p>
+    {% endif %}
+
+</body>
+
+</html>
