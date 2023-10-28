@@ -55,8 +55,9 @@
         <button type="submit">Upload</button>
     </form>
     {% if data %}
-    {{ data.stock_value }}
-    {{ data.stock_value_without_iva }}
+    <p> 库存税前总价值: {{ data.stock_value }} </p>
+    <p> 库存税后总价值: {{ data.stock_value_without_iva }} </p>
+
     {% else %}
     <p>No data to display.</p>
     {% endif %}
@@ -64,3 +65,24 @@
 </body>
 
 </html>
+<a href="#" id="downloadStockValues">Download Stock Values</a>
+
+<script>
+    // Function to create and trigger the download
+    function downloadTextFile(content, fileName) {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', fileName);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    // Click event for "Download Stock Values" link
+    document.getElementById('downloadStockValues').addEventListener('click', function () {
+        const stockValue = "库存税前总价值: {{ data.stock_value }}\n库存税后总价值: {{ data.stock_value_without_iva }}";
+        const txtname = "{{ data.txt_name }}"
+        downloadTextFile(stockValue, txtname);
+    });
+</script>
