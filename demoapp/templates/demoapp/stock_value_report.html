@@ -55,8 +55,8 @@
         <button type="submit">Upload</button>
     </form>
     {% if data %}
-    <p> 库存税前总价值: {{ data.stock_value }} </p>
-    <p> 库存税后总价值: {{ data.stock_value_without_iva }} </p>
+    <p> 库存税前总价值: {{ data.stock_value_without_iva }} </p>
+    <p> 库存税后总价值: {{ data.stock_value }} </p>
     <a href="#" id="downloadStockValues">Download Stock Values</a>
     {% else %}
     <p>No data to display.</p>
