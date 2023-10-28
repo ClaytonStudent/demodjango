@@ -67,7 +67,7 @@ def analysis_stock_value_report(filename1,filename2):
     merged_df = get_merged_df(df_stock,df_product)
     stock_value,stock_value_without_iva = get_stock_value(merged_df)
     data = {
-        "txt_name": filename2.split('_')[2],
+        "txt_name": filename2.split('_')[2] + '.txt',
         "stock_value": stock_value,
         "stock_value_without_iva": stock_value_without_iva,
     }

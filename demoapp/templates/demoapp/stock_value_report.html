@@ -57,7 +57,7 @@
     {% if data %}
     <p> 库存税前总价值: {{ data.stock_value }} </p>
     <p> 库存税后总价值: {{ data.stock_value_without_iva }} </p>
-
+    <a href="#" id="downloadStockValues">Download Stock Values</a>
     {% else %}
     <p>No data to display.</p>
     {% endif %}
@@ -65,7 +65,7 @@
 </body>
 
 </html>
-<a href="#" id="downloadStockValues">Download Stock Values</a>
+
 
 <script>
     // Function to create and trigger the download
