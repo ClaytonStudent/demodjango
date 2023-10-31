@@ -36,11 +36,19 @@ class ProductDelete(DeleteView):
     model = Product
     template_name = 'demoapp/product_confirm_delete.html'
     success_url = reverse_lazy('product_list')
-    
+
+'''
+Stock Value Report Start
+'''
 def stock_value_report(request):
     if request.method == 'POST':
-        myfile1 = request.FILES['myfile1']
-        myfile2 = request.FILES['myfile2']
+        print('DEBUG')
+        uploaded_files = request.FILES.getlist('myfile')[:-1]
+        for uploaded_file in uploaded_files:
+            if '.csv' in uploaded_file.name:
+                myfile1 = uploaded_file
+            else:
+                myfile2 = uploaded_file
         fs = FileSystemStorage()
         if fs.exists(myfile1.name):
             fs.delete(myfile1.name)
@@ -49,9 +57,6 @@ def stock_value_report(request):
         filename1 = fs.save(myfile1.name, myfile1)
         filename2 = fs.save(myfile2.name, myfile2)
         data = analysis_stock_value_report(filename1,filename2)
-        #data = {'name1': myfile1.name, 'name2': myfile2.name}
-        #request.session['df_lt_zero'] = data['df_lt_zero'].to_json(orient='records')
-        #request.session['df_eq_zero'] = data['df_eq_zero'].to_json(orient='records')
         return render(request, 'demoapp/stock_value_report.html', {'data':data})
     return render(request, 'demoapp/stock_value_report.html')
 
@@ -88,8 +93,10 @@ def get_stock(df):
     df_expo = df[df.品名.str.contains("LOOK OCCHIALI EXPO")]
     df.drop(df_expo.index,inplace=True)
     # Drop one item
-    out_index = df.index[df['型号'] == '30IOI0000002000'].to_list()[0]
-    df.drop(index=out_index,inplace=True)
+    condition = df['型号'] == '30IOI0000002000'
+    df = df[~condition]
+    #out_index = df.index[df['型号'] == '30IOI0000002000'].to_list()[0]
+    #df.drop(index=out_index,inplace=True)
     # rename the columns
     df.rename(columns={'型号':'product_model'}, inplace=True)
     return df
@@ -104,3 +111,45 @@ def get_stock_value(merged_df):
     stock_value = avg_stock + remain_stock
     stock_value_without_iva = merged_df['小计'].sum()
     return int(stock_value), int(stock_value_without_iva)
+'''
+Stock Value Report End
+'''
+
+
+'''
+Client Monthly Report Start
+
+def client_monthly_report(request):
+    if request.method == 'POST':
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        if fs.exists(myfile2.name):
+            fs.delete(myfile2.name)
+        filename1 = fs.save(myfile1.name, myfile1)
+        filename2 = fs.save(myfile2.name, myfile2)
+        #data = { 'filename1':filename1, 'filename2':filename2}
+        data = analysis_client_monthly_report(filename1,filename2)
+        return render(request, 'demoapp/client_monthly_report.html', {'data':data})
+    return render(request, 'demoapp/client_monthly_report.html')
+
+def analysis_client_monthly_report(filename1,filename2):
+    file1 = os.path.join(settings.MEDIA_ROOT, filename1)
+    file2 = os.path.join(settings.MEDIA_ROOT, filename2)
+    df_client = pd.read_html(file1)[0]
+    month_sale = df_client.tail(1)['金额(€)'].values[0] + df_client.tail(1)['退货(€)'].values[0]
+    month_earn = df_client.tail(1)['本期利润'].values[0]
+    month_rate = round(month_earn / month_sale * 100,2)
+    print(month_sale,month_earn,month_rate)
+    df_client.drop(df_client.tail(1).index,inplace=True)
+    month_client_number = df_client.shape[0]
+    data = {
+        "month_sale": month_sale,
+        "month_earn": month_earn,
+        "month_rate": month_rate,
+        "month_client_number": month_client_number,   
+    }
+    return data
+'''
