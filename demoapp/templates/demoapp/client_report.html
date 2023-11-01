@@ -11,6 +11,12 @@
             text-align: center;
         }
 
+        h3 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         p {
             text-align: center;
         }
@@ -182,8 +188,8 @@
         <input class="file-uploader__submit-button" type="submit" value="Upload">
     </form>
     {% if data %}
-    <p> Done </p>
-    <a href="{% url 'download_file' %}?source=ClientReport">Download File</a>
+    <p> 处理完成,请下载文件 </p>
+    <p><a href="{% url 'download_file' %}?source=ClientReport">Download File</a></p>
     {% else %}
     <p>No data to display.</p>
     {% endif %}

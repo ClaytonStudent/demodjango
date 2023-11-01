@@ -173,13 +173,16 @@ def analysis_client_report(filename1,filename2):
     grouped_sale = get_grouped_sale(df_client_sale)
     merged = get_merged(grouped_sale, df_client_earn)
     styled_df = get_styled_df(merged)
+    handler_area_sell,handler_sell,area_sell = add_handler_area_sell(merged)
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')) as writer:
+        styled_df.to_excel(writer, sheet_name='客户销售', index=False)
+        handler_area_sell.to_excel(writer, sheet_name='推销员-大区-销售',index=False)
+        handler_sell.to_excel(writer, sheet_name='推销员-销售',index=False)
+        area_sell.to_excel(writer, sheet_name='大区-销售',index=False)
     data = {
         'merged': merged,#.to_json(orient='records'),
         'styled_df':styled_df
-        } # .render()
-    # os.path.join(settings.MEDIA_ROOT, '客户分析.xlsx')
-    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')) as writer:
-        styled_df.to_excel(writer, sheet_name='ClientReport', index=False)
+        } 
     return data
 
 def read_in_df_client_sale(filename):
@@ -205,8 +208,8 @@ def get_grouped_sale(df_client_sale):
     grouped_sale.reset_index(inplace=True)
     grouped_sale['欠款'] = grouped_sale['金额(€)'] - grouped_sale['本次收款']
     grouped_sale['欠款'] = grouped_sale['欠款'].astype(float).round(2)
-    grouped_sale['欠款率%'] = grouped_sale['欠款'] /grouped_sale['金额(€)'] * 100
-    grouped_sale['欠款率%'] = grouped_sale['欠款率%'].astype(float).round(2)
+    grouped_sale['欠款率(%)'] = grouped_sale['欠款'] /grouped_sale['金额(€)'] * 100
+    grouped_sale['欠款率(%)'] = grouped_sale['欠款率(%)'].astype(float).round(2)
     return grouped_sale
 
 def get_merged(grouped_sale, df_client_earn):
@@ -218,24 +221,32 @@ def get_merged(grouped_sale, df_client_earn):
     for index, row in rows_to_update.iterrows():
         merged.at[index, '欠款'] += row['退货(€)']
 
-    # Update '欠款率%' column by recalculating
+    # Update '欠款率(%)' column by recalculating
     rows_to_update = merged[(merged['欠款'] > 0) & (merged['欠款'] < 1)]
     for index, row in rows_to_update.iterrows():
         merged.at[index, '欠款'] = 0
-        merged.at[index, '欠款率%'] = 0
+        merged.at[index, '欠款率(%)'] = 0
     merged['利率(%)'].fillna(0, inplace=True)
     # Get Area
     merged.loc[:, '大区'] = merged['省份'].map(city_to_capital).fillna(merged['省份'])
     selected_columns = ['客户经办人','城市','省份','大区']
     merged[selected_columns] = merged[selected_columns].fillna('未知')
-    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率%','利率(%)']
+    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)']
     merged = merged[selected_columns]
+    #name_match = {'本次收款':'收款','金额(€)':'金额',}
+    #merged.rename(columns=name_match, inplace=True)
     return merged
+
+
+def add_handler_area_sell(merged):
+    handler_area_sell =merged.groupby(['客户经办人', '大区'])['金额(€)'].sum().reset_index().sort_values('金额(€)', ascending=False)
+    handler_sell = merged.groupby('客户经办人')['金额(€)'].sum().reset_index().sort_values('金额(€)', ascending=False)
+    area_sell = merged.groupby('大区')['金额(€)'].sum().reset_index().sort_values('金额(€)', ascending=False)
+    return handler_area_sell, handler_sell, area_sell
 
 def apply_color(val):
     color = 'salmon' if val != 0 else 'limegreen'
     return f'background-color: {color}'
-
 
 def date_color(date_string):
     date = datetime.strptime(date_string, '%Y-%m-%d')
@@ -246,8 +257,18 @@ def date_color(date_string):
         color = 'salmon'
     return f'background-color: {color}'
 
+def debt_rate_color(val):
+    color = 'salmon' if val > 50 else 'limegreen'
+    return f'background-color: {color}'
+
+def earning_rate_color(val):
+    color = 'salmon' if val < 20 else 'limegreen'
+    return f'background-color: {color}'
+
 def get_styled_df(merged):
     styled_df = merged.style.applymap(lambda x: apply_color(x),subset=['欠款'])
+    styled_df = styled_df.applymap(lambda x: debt_rate_color(x),subset=['欠款率(%)'])
+    styled_df = styled_df.applymap(lambda x: earning_rate_color(x),subset=['利率(%)'])
     styled_df = styled_df.applymap(lambda x: date_color(x),subset=['最近下单日期'])
     return styled_df
 
