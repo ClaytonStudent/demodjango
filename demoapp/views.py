@@ -8,6 +8,7 @@ from django.core.files.storage import FileSystemStorage
 import pandas as pd
 import os
 from django.conf import settings
+from django.http import FileResponse
 # Create your views here.
 def index(request):
     context = {"data":"Home Page of Django App"}
@@ -77,7 +78,6 @@ def analysis_stock_value_report(filename1,filename2):
         "stock_value_without_iva": stock_value_without_iva,
     }
     return data 
-
 def get_product(product_file):
     df_product = pd.read_csv(product_file)
     df_product.drop(df_product.tail(1).index,inplace=True)
@@ -117,12 +117,15 @@ Stock Value Report End
 
 
 '''
-Client Monthly Report Start
+Client Report Start
+'''
 
-def client_monthly_report(request):
+# table one: client sale
+def client_report(request):
     if request.method == 'POST':
-        myfile1 = request.FILES['myfile1']
-        myfile2 = request.FILES['myfile2']
+        uploaded_files = request.FILES.getlist('myfile')[:-1]
+        myfile1 = uploaded_files[0]
+        myfile2 = uploaded_files[1]
         fs = FileSystemStorage()
         if fs.exists(myfile1.name):
             fs.delete(myfile1.name)
@@ -130,26 +133,137 @@ def client_monthly_report(request):
             fs.delete(myfile2.name)
         filename1 = fs.save(myfile1.name, myfile1)
         filename2 = fs.save(myfile2.name, myfile2)
-        #data = { 'filename1':filename1, 'filename2':filename2}
-        data = analysis_client_monthly_report(filename1,filename2)
-        return render(request, 'demoapp/client_monthly_report.html', {'data':data})
-    return render(request, 'demoapp/client_monthly_report.html')
+        data = analysis_client_report(filename1,filename2)
+        #request.session['merged'] = data['merged']
+        return render(request, 'demoapp/client_report.html', {'data':data})
+    return render(request, 'demoapp/client_report.html')
 
-def analysis_client_monthly_report(filename1,filename2):
+from datetime import datetime, timedelta
+
+city_to_capital = {'CH':'Abruzzo','AQ':'Abruzzo','PE':'Abruzzo','TE':'Abruzzo', 
+'MT':'Basilicata', 'PZ':'Basilicata',
+'CS':'Calabria', 'CZ':'Calabria', 'KR':'Calabria', 'RC':'Calabria', 'VV':'Calabria',
+'AV':'Campania', 'BN':'Campania', 'CE':'Campania', 'NA':'Campania', 'SA':'Campania',
+'BO':'Emilia-Romagna', 'FE':'Emilia-Romagna', 'FO':'Emilia-Romagna', 'MO':'Emilia-Romagna', 'PC':'Emilia-Romagna', 'PR':'Emilia-Romagna', 'RA':'Emilia-Romagna', 'RE':'Emilia-Romagna', 'RN':'Emilia-Romagna',
+'GO':'Friuli-Venezia Giulia', 'PN':'Friuli-Venezia Giulia', 'TS':'Friuli-Venezia Giulia', 'UD':'Friuli-Venezia Giulia',
+'FR':'Lazio', 'LT':'Lazio', 'RI':'Lazio', 'RM':'Lazio', 'VT':'Lazio',
+'GE':'Liguria', 'IM':'Liguria', 'SP':'Liguria', 'SV':'Liguria',
+'BG':'Lombardia', 'BS':'Lombardia', 'CO':'Lombardia', 'CR':'Lombardia', 'LC':'Lombardia', 'LO':'Lombardia', 'MN':'Lombardia', 'MI':'Lombardia', 'PV':'Lombardia', 'SO':'Lombardia', 'VA':'Lombardia',
+'AN':'Marche', 'AP':'Marche', 'MC':'Marche', 'PS':'Marche',
+'CB':'Molise', 'IS':'Molise',
+'AL':'Piemonte', 'AT':'Piemonte','BI':'Piemonte', 'CN':'Piemonte','NO':'Piemonte', 'TO':'Piemonte','VB':'Piemonte', 'VC':'Piemonte',
+'BA':'Puglia', 'BR':'Puglia', 'FG':'Puglia', 'LE':'Puglia', 'TA':'Puglia',
+'CA':'Sardegna', 'NU':'Sardegna', 'OR':'Sardegna', 'SS':'Sardegna',
+'AG':'Sicilia', 'CL':'Sicilia', 'CT':'Sicilia', 'EN':'Sicilia', 'ME':'Sicilia', 'PA':'Sicilia', 'RG':'Sicilia', 'SR':'Sicilia', 'TP':'Sicilia',
+'AR':'Toscana', 'FI':'Toscana', 'GR':'Toscana', 'LI':'Toscana', 'LU':'Toscana', 'MS':'Toscana', 'PI':'Toscana', 'PT':'Toscana', 'PO':'Toscana', 'SI':'Toscana',
+'BZ':'Trentino-Alto Adige', 'TN':'Trentino-Alto Adige',
+'PG':'Umbria', 'TR':'Umbria',
+'AO':'Valle D\'Aosta',
+'BL':'Veneto', 'PD':'Veneto', 'RO':'Veneto', 'TV':'Veneto', 'VE':'Veneto', 'VI':'Veneto', 'VR':'Veneto'}
+
+def analysis_client_report(filename1,filename2):
+    print('filename1',filename1)
+    print('filename2',filename2)
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
-    df_client = pd.read_html(file1)[0]
-    month_sale = df_client.tail(1)['金额(€)'].values[0] + df_client.tail(1)['退货(€)'].values[0]
-    month_earn = df_client.tail(1)['本期利润'].values[0]
-    month_rate = round(month_earn / month_sale * 100,2)
-    print(month_sale,month_earn,month_rate)
-    df_client.drop(df_client.tail(1).index,inplace=True)
-    month_client_number = df_client.shape[0]
+    print(file1)
+    print(file2)
+    df_client_sale = read_in_df_client_sale(file1)
+    df_client_earn = read_in_df_client_earn(file2)
+    grouped_sale = get_grouped_sale(df_client_sale)
+    merged = get_merged(grouped_sale, df_client_earn)
+    styled_df = get_styled_df(merged)
     data = {
-        "month_sale": month_sale,
-        "month_earn": month_earn,
-        "month_rate": month_rate,
-        "month_client_number": month_client_number,   
-    }
+        'merged': merged,#.to_json(orient='records'),
+        'styled_df':styled_df
+        } # .render()
+    # os.path.join(settings.MEDIA_ROOT, '客户分析.xlsx')
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')) as writer:
+        styled_df.to_excel(writer, sheet_name='ClientReport', index=False)
     return data
-'''
+
+def read_in_df_client_sale(filename):
+    df_client_sale = pd.read_html(filename)[0]
+    df_client_sale.drop(df_client_sale.tail(1).index,inplace=True)
+    df_client_sale.rename(columns={'客户ID号':'客户编号'},inplace=True)
+    selected_columns = ['客户编号','日期','金额(€)','本次收款']
+    df_client_sale = df_client_sale[selected_columns]
+    return df_client_sale
+
+def read_in_df_client_earn(filename):
+    df_client_earn = pd.read_html(filename)[0]
+    df_client_earn.drop(df_client_earn.tail(1).index,inplace=True)
+    selected_columns = ['客户编号','客户名称', '客户经办人','城市', '省份', '分组','退货(€)','利率(%)']
+    df_client_earn = df_client_earn[selected_columns]
+    df_client_earn['退货(€)'].fillna(0, inplace=True)
+    return df_client_earn
+
+def get_grouped_sale(df_client_sale):
+    grouped_sale = df_client_sale.groupby('客户编号').sum()
+    grouped_sale['下单次数'] = df_client_sale['客户编号'].value_counts()
+    grouped_sale['最近下单日期'] = grouped_sale['日期'].str[-10:]
+    grouped_sale.reset_index(inplace=True)
+    grouped_sale['欠款'] = grouped_sale['金额(€)'] - grouped_sale['本次收款']
+    grouped_sale['欠款'] = grouped_sale['欠款'].astype(float).round(2)
+    grouped_sale['欠款率%'] = grouped_sale['欠款'] /grouped_sale['金额(€)'] * 100
+    grouped_sale['欠款率%'] = grouped_sale['欠款率%'].astype(float).round(2)
+    return grouped_sale
+
+def get_merged(grouped_sale, df_client_earn):
+    merged = grouped_sale.merge(df_client_earn, on='客户编号', how='inner')
+    # Find rows where '欠款' is greater than 0 and '退货(€)' is not equal to 0
+    rows_to_update = merged[(merged['欠款'] > 0) & (merged['退货(€)'] != 0)]
+
+    # Update '欠款' column by adding '退货(€)' value
+    for index, row in rows_to_update.iterrows():
+        merged.at[index, '欠款'] += row['退货(€)']
+
+    # Update '欠款率%' column by recalculating
+    rows_to_update = merged[(merged['欠款'] > 0) & (merged['欠款'] < 1)]
+    for index, row in rows_to_update.iterrows():
+        merged.at[index, '欠款'] = 0
+        merged.at[index, '欠款率%'] = 0
+    merged['利率(%)'].fillna(0, inplace=True)
+    # Get Area
+    merged.loc[:, '大区'] = merged['省份'].map(city_to_capital).fillna(merged['省份'])
+    selected_columns = ['客户经办人','城市','省份','大区']
+    merged[selected_columns] = merged[selected_columns].fillna('未知')
+    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率%','利率(%)']
+    merged = merged[selected_columns]
+    return merged
+
+def apply_color(val):
+    color = 'salmon' if val != 0 else 'limegreen'
+    return f'background-color: {color}'
+
+
+def date_color(date_string):
+    date = datetime.strptime(date_string, '%Y-%m-%d')
+    ninety_days_earlier = datetime.now() - timedelta(days=90)
+    if date > ninety_days_earlier:
+        color = 'limegreen'
+    else:
+        color = 'salmon'
+    return f'background-color: {color}'
+
+def get_styled_df(merged):
+    styled_df = merged.style.applymap(lambda x: apply_color(x),subset=['欠款'])
+    styled_df = styled_df.applymap(lambda x: date_color(x),subset=['最近下单日期'])
+    return styled_df
+
+
+# with pd.ExcelWriter('客户分析.xlsx') as writer:
+#    merged.to_excel(writer, sheet_name='客户报告', index=False)
+
+
+def download_file(request):
+    source = request.GET.get('source', None)
+    # Define the path to the file you want to download
+    file_path = os.path.join(settings.MEDIA_ROOT, source+'.xlsx')
+    # os.path.join(settings.MEDIA_ROOT, filename1)
+    # Open and serve the file for download
+    file = open(file_path, 'rb')
+    #with open(file_path, 'rb') as file:
+    response = FileResponse(file)
+    response['Content-Disposition'] = 'attachment; filename="ClientReport.xlsx"'
+    return response

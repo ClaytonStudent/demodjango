@@ -11,5 +11,7 @@ urlpatterns = [
     path("product_update/<int:pk>/", views.ProductUpdate.as_view(),name="product_update"),
     path("product_delete/<int:pk>/", views.ProductDelete.as_view(),name="product_delete"),
     path('stock_value_report/', views.stock_value_report, name='stock_value_report'),
+    path('client_report/', views.client_report, name='client_report'),
+    path('download_file/', views.download_file, name='download_file'),
 ]
 
