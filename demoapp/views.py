@@ -252,6 +252,10 @@ def add_handler_area_sell(merged):
     area_sell = merged.groupby('大区')['金额(€)'].sum().reset_index().sort_values('金额(€)', ascending=False)
     return handler_area_sell, handler_sell, area_sell
 
+def month_color(val):
+    color = 'limegreen' if val > 0 else 'none' # none transparent
+    return f'background-color: {color}'
+
 def apply_color(val):
     color = 'salmon' if val != 0 else 'limegreen'
     return f'background-color: {color}'
@@ -278,7 +282,7 @@ def get_styled_df(merged,month_names):
     styled_df = styled_df.applymap(lambda x: debt_rate_color(x),subset=['欠款率(%)'])
     styled_df = styled_df.applymap(lambda x: earning_rate_color(x),subset=['利率(%)'])
     styled_df = styled_df.applymap(lambda x: date_color(x),subset=['最近下单日期'])
-    styled_df = styled_df.applymap(lambda x: apply_color(x),subset=month_names)
+    styled_df = styled_df.applymap(lambda x: month_color(x),subset=month_names)
     return styled_df
 
 
