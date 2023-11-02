@@ -162,17 +162,16 @@ city_to_capital = {'CH':'Abruzzo','AQ':'Abruzzo','PE':'Abruzzo','TE':'Abruzzo',
 'BL':'Veneto', 'PD':'Veneto', 'RO':'Veneto', 'TV':'Veneto', 'VE':'Veneto', 'VI':'Veneto', 'VR':'Veneto'}
 
 def analysis_client_report(filename1,filename2):
-    print('filename1',filename1)
-    print('filename2',filename2)
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
     print(file1)
     print(file2)
     df_client_sale = read_in_df_client_sale(file1)
     df_client_earn = read_in_df_client_earn(file2)
-    grouped_sale = get_grouped_sale(df_client_sale)
-    merged = get_merged(grouped_sale, df_client_earn)
-    styled_df = get_styled_df(merged)
+    sales_by_month, month_names = get_sale_by_month(df_client_sale)
+    grouped_sale = get_grouped_sale(df_client_sale,sales_by_month)
+    merged = get_merged(grouped_sale, df_client_earn,month_names)
+    styled_df = get_styled_df(merged,month_names)
     handler_area_sell,handler_sell,area_sell = add_handler_area_sell(merged)
     with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')) as writer:
         styled_df.to_excel(writer, sheet_name='客户销售', index=False)
@@ -201,7 +200,15 @@ def read_in_df_client_earn(filename):
     df_client_earn['退货(€)'].fillna(0, inplace=True)
     return df_client_earn
 
-def get_grouped_sale(df_client_sale):
+def get_sale_by_month(df_client_sale):
+    df_client_sale['月份'] = df_client_sale['日期'].str[5:7]
+    sales_by_month = df_client_sale.groupby(['客户编号', '月份'])['金额(€)'].sum().unstack().reset_index()
+    sales_by_month.fillna(0, inplace=True)
+    month_names = list(sales_by_month.columns.values[1:])
+    return sales_by_month, month_names
+
+
+def get_grouped_sale(df_client_sale,sales_by_month):
     grouped_sale = df_client_sale.groupby('客户编号').sum()
     grouped_sale['下单次数'] = df_client_sale['客户编号'].value_counts()
     grouped_sale['最近下单日期'] = grouped_sale['日期'].str[-10:]
@@ -210,9 +217,10 @@ def get_grouped_sale(df_client_sale):
     grouped_sale['欠款'] = grouped_sale['欠款'].astype(float).round(2)
     grouped_sale['欠款率(%)'] = grouped_sale['欠款'] /grouped_sale['金额(€)'] * 100
     grouped_sale['欠款率(%)'] = grouped_sale['欠款率(%)'].astype(float).round(2)
+    grouped_sale = grouped_sale.merge(sales_by_month, on='客户编号', how='inner')
     return grouped_sale
 
-def get_merged(grouped_sale, df_client_earn):
+def get_merged(grouped_sale, df_client_earn,month_names):
     merged = grouped_sale.merge(df_client_earn, on='客户编号', how='inner')
     # Find rows where '欠款' is greater than 0 and '退货(€)' is not equal to 0
     rows_to_update = merged[(merged['欠款'] > 0) & (merged['退货(€)'] != 0)]
@@ -231,7 +239,7 @@ def get_merged(grouped_sale, df_client_earn):
     merged.loc[:, '大区'] = merged['省份'].map(city_to_capital).fillna(merged['省份'])
     selected_columns = ['客户经办人','城市','省份','大区']
     merged[selected_columns] = merged[selected_columns].fillna('未知')
-    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)']
+    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)'] + month_names
     merged = merged[selected_columns]
     #name_match = {'本次收款':'收款','金额(€)':'金额',}
     #merged.rename(columns=name_match, inplace=True)
@@ -265,11 +273,12 @@ def earning_rate_color(val):
     color = 'salmon' if val < 20 else 'limegreen'
     return f'background-color: {color}'
 
-def get_styled_df(merged):
+def get_styled_df(merged,month_names):
     styled_df = merged.style.applymap(lambda x: apply_color(x),subset=['欠款'])
     styled_df = styled_df.applymap(lambda x: debt_rate_color(x),subset=['欠款率(%)'])
     styled_df = styled_df.applymap(lambda x: earning_rate_color(x),subset=['利率(%)'])
     styled_df = styled_df.applymap(lambda x: date_color(x),subset=['最近下单日期'])
+    styled_df = styled_df.applymap(lambda x: apply_color(x),subset=month_names)
     return styled_df
 
 
