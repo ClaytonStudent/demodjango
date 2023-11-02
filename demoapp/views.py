@@ -195,7 +195,7 @@ def read_in_df_client_sale(filename):
 def read_in_df_client_earn(filename):
     df_client_earn = pd.read_html(filename)[0]
     df_client_earn.drop(df_client_earn.tail(1).index,inplace=True)
-    selected_columns = ['客户编号','客户名称', '客户经办人','城市', '省份', '分组','退货(€)','利率(%)']
+    selected_columns = ['客户编号','客户名称', '客户经办人','手机','税号','地址','城市', '省份', '分组','退货(€)','利率(%)']
     df_client_earn = df_client_earn[selected_columns]
     df_client_earn['退货(€)'].fillna(0, inplace=True)
     return df_client_earn
@@ -239,7 +239,7 @@ def get_merged(grouped_sale, df_client_earn,month_names):
     merged.loc[:, '大区'] = merged['省份'].map(city_to_capital).fillna(merged['省份'])
     selected_columns = ['客户经办人','城市','省份','大区']
     merged[selected_columns] = merged[selected_columns].fillna('未知')
-    selected_columns = ['客户编号','客户名称','客户经办人', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)'] + month_names
+    selected_columns = ['客户编号','客户名称','客户经办人','手机','税号','地址', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)'] + month_names
     merged = merged[selected_columns]
     #name_match = {'本次收款':'收款','金额(€)':'金额',}
     #merged.rename(columns=name_match, inplace=True)
