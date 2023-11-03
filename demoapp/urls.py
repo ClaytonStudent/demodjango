@@ -13,5 +13,6 @@ urlpatterns = [
     path('stock_value_report/', views.stock_value_report, name='stock_value_report'),
     path('client_report/', views.client_report, name='client_report'),
     path('download_file/', views.download_file, name='download_file'),
+    path('region_sell_map_view/', views.region_sell_map_view, name='region_sell_map_view'),
 ]
 

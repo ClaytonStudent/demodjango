@@ -301,3 +301,20 @@ def download_file(request):
     response = FileResponse(file)
     response['Content-Disposition'] = 'attachment; filename="ClientReport.xlsx"'
     return response
+
+
+from django.shortcuts import render
+import json,csv
+
+def region_sell_map_view(request):
+    csv_file = os.path.join(settings.MEDIA_ROOT, 'area_sell.csv')
+    data = [['Code','Label', 'Sales']]
+    with open(csv_file, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row if present
+        for row in reader:
+            # Assuming the CSV has two columns: 'Country' and 'sales'
+            code, country, sales = row
+            data.append([code, country,int(float(sales))])
+    context= {'array': json.dumps(data), 'data':data[1:]}
+    return render(request, 'demoapp/region_sell_map_view.html',context)
