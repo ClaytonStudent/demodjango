@@ -163,6 +163,7 @@
             padding: 0;
         }
     </style>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
@@ -173,8 +174,8 @@
 
 {% block content %}
 <h4>库存价值</h4>
-<p style="margin-bottom: 20px;">文件1: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</p>
-<p>文件2: 博讯 - 销售 - 详细查询 - 库存</p>
+<p class="text-dark" style="margin-bottom: 20px;">文件1: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</p>
+<p class="text-dark">文件2: 博讯 - 销售 - 详细查询 - 库存</p>
 <p>(注意事项: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价)</p>
 <form method="post" class="file-uploader" action="" enctype="multipart/form-data">
     {% csrf_token %}

@@ -5,6 +5,12 @@
 <head>
 
     <style>
+        body {
+            background-image: none;
+            /* Remove the background image */
+            /* Add any other styles or background settings as needed */
+        }
+
         h4 {
             margin-top: 30px;
             margin-bottom: 20px;
@@ -69,7 +75,7 @@
             {% for item in data %}
             <tr>
                 <td>{{ item.1 }}</td>
-                <td>{{ item.2 }}</td>
+                <td style="color:#0000ff">{{ item.2 }}</td>
             </tr>
             {% endfor %}
         </tbody>
