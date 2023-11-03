@@ -1,8 +1,16 @@
-<!DOCTYPE html>
-<html>
+{% extends 'demoapp/base.html' %}
+
+{% block content %}
 
 <head>
+
     <style>
+        h4 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         .container {
             display: flex;
             /* Use flexbox to arrange items side by side */
@@ -46,27 +54,27 @@
     </script>
 </head>
 
-<body>
-    <div class="container">
-        <div id="regions_div" style="width: 900px; height: 500px;"></div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Region</th>
-                    <th>Sales</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in data %}
-                <tr>
-                    <td>{{ item.1 }}</td>
-                    <td>{{ item.2 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
-</body>
+<h4>Sales by Region (2023-01-01 --- 2023-10-31)</h4>
+<div class="container">
+    <div id="regions_div" style="width: 900px; height: 500px;"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Region</th>
+                <th>Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.1 }}</td>
+                <td>{{ item.2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-</html>
+
+{% endblock content %}

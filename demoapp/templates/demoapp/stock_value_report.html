@@ -1,9 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <title>库存价值报告</title>
-    <h2>库存价值报告</h2>
     <style>
         h2 {
             margin-top: 30px;
@@ -11,7 +7,7 @@
             text-align: center;
         }
 
-        h3 {
+        h4 {
             margin-top: 30px;
             margin-bottom: 20px;
             text-align: center;
@@ -173,32 +169,36 @@
 
 </head>
 
-<body>
-    <h3 style="margin-bottom: 50px;">产品数据: 登陆博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</h3>
-    <h3 style="margin-top: 20px;">库存数据: 登陆博讯 - 销售 - 详细查询 - 库存</h3>
-    <h3>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价</h3>
-    <form method="post" class="file-uploader" action="" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="file-uploader__message-area">
-            <p>Select a file to upload</p>
-        </div>
-        <div class="file-chooser">
-            <input class="file-chooser__input" type="file" name='myfile' multiple>
-        </div>
-        <input class="file-uploader__submit-button" type="submit" value="Upload">
-    </form>
-    {% if data %}
-    <p> 库存税前总价值: {{ data.stock_value_without_iva }} </p>
-    <p> 库存税后总价值: {{ data.stock_value }} </p>
-    <a href="#" id="downloadStockValues">Download Stock Values</a>
-    {% else %}
-    <p>No data to display.</p>
-    {% endif %}
-    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+{% extends 'demoapp/base.html' %}
 
-</body>
+{% block content %}
+<h4>库存价值</h4>
+<p style="margin-bottom: 20px;">文件1: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</p>
+<p>文件2: 博讯 - 销售 - 详细查询 - 库存</p>
+<p>(注意事项: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价)</p>
+<form method="post" class="file-uploader" action="" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="file-uploader__message-area">
+        <p>Select a file to upload</p>
+    </div>
+    <div class="file-chooser">
+        <input class="file-chooser__input" type="file" name='myfile' multiple>
+    </div>
+    <input class="file-uploader__submit-button" type="submit" value="Upload">
+</form>
+{% if data %}
+<p> 库存税前总价值: {{ data.stock_value_without_iva }} </p>
+<p> 库存税后总价值: {{ data.stock_value }} </p>
+<p><a href="{% url 'download_file' %}?source=StockValue.txt">Download Stock Value File</a></p>
 
-</html>
+{% else %}
+<p><a href="{% url 'download_file' %}?source=StockValue.txt">Download Previous File</a></p>
+{% endif %}
+<script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+
+
+
+{% endblock content %}
 <script>
     (function ($) {
         $.fn.uploader = function (options) {
@@ -349,23 +349,4 @@
         });
     });
 
-</script>
-<script>
-    // Function to create and trigger the download
-    function downloadTextFile(content, fileName) {
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-        element.setAttribute('download', fileName);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-
-    // Click event for "Download Stock Values" link
-    document.getElementById('downloadStockValues').addEventListener('click', function () {
-        const stockValue = "库存税前总价值: {{ data.stock_value }}\n库存税后总价值: {{ data.stock_value_without_iva }}";
-        const txtname = "{{ data.txt_name }}"
-        downloadTextFile(stockValue, txtname);
-    });
 </script>

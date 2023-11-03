@@ -73,10 +73,19 @@ def analysis_stock_value_report(filename1,filename2):
     merged_df = get_merged_df(df_stock,df_product)
     stock_value,stock_value_without_iva = get_stock_value(merged_df)
     data = {
-        "txt_name": filename2.split('_')[2] + '.txt',
+        "date": filename2.split('_')[2],
         "stock_value": stock_value,
         "stock_value_without_iva": stock_value_without_iva,
     }
+    # Specify the path to the text file
+    file_name = "StockValue.txt"  # Replace with your desired file path
+    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+    # Open the file for writing
+    with open(file_path, 'w') as file:
+        # Write the data to the file
+        for key, value in data.items():
+            file.write(f"{key}: {value}\n")
+    file.close()
     return data 
 def get_product(product_file):
     df_product = pd.read_csv(product_file)
@@ -292,17 +301,22 @@ def get_styled_df(merged,month_names):
 
 def download_file(request):
     source = request.GET.get('source', None)
+    print(source)
     # Define the path to the file you want to download
-    file_path = os.path.join(settings.MEDIA_ROOT, source+'.xlsx')
+    file_path = os.path.join(settings.MEDIA_ROOT, source)
     # os.path.join(settings.MEDIA_ROOT, filename1)
     # Open and serve the file for download
     file = open(file_path, 'rb')
     #with open(file_path, 'rb') as file:
     response = FileResponse(file)
-    response['Content-Disposition'] = 'attachment; filename="ClientReport.xlsx"'
+    #response['Content-Disposition'] = 'attachment; filename="{source}"'
+    response['Content-Disposition'] = f'attachment; filename="{source}"'
     return response
 
 
+'''
+Region Sell Map View
+'''
 from django.shortcuts import render
 import json,csv
 
@@ -318,3 +332,7 @@ def region_sell_map_view(request):
             data.append([code, country,int(float(sales))])
     context= {'array': json.dumps(data), 'data':data[1:]}
     return render(request, 'demoapp/region_sell_map_view.html',context)
+
+'''
+Salesman Sell Map View
+'''

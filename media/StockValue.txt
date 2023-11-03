@@ -1,0 +1,3 @@
+date: 2023-11-03
+stock_value: 3107024
+stock_value_without_iva: 2663540
