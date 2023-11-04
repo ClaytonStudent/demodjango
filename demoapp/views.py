@@ -44,12 +44,14 @@ Stock Value Report Start
 def stock_value_report(request):
     if request.method == 'POST':
         print('DEBUG')
-        uploaded_files = request.FILES.getlist('myfile')[:-1]
-        for uploaded_file in uploaded_files:
-            if '.csv' in uploaded_file.name:
-                myfile1 = uploaded_file
-            else:
-                myfile2 = uploaded_file
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
+       # uploaded_files = request.FILES.getlist('myfile')[:-1]
+       # for uploaded_file in uploaded_files:
+       #     if '.csv' in uploaded_file.name:
+       #         myfile1 = uploaded_file
+       #     else:
+       #         myfile2 = uploaded_file
         fs = FileSystemStorage()
         if fs.exists(myfile1.name):
             fs.delete(myfile1.name)
@@ -132,9 +134,11 @@ Client Report Start
 # table one: client sale
 def client_report(request):
     if request.method == 'POST':
-        uploaded_files = request.FILES.getlist('myfile')[:-1]
-        myfile1 = uploaded_files[0]
-        myfile2 = uploaded_files[1]
+        #uploaded_files = request.FILES.getlist('myfile')[:-1]
+        #myfile1 = uploaded_files[0]
+        #myfile2 = uploaded_files[1]
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
         fs = FileSystemStorage()
         if fs.exists(myfile1.name):
             fs.delete(myfile1.name)
