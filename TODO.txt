@@ -1,2 +1,0 @@
-1. Calculate the price * discount (Discount is Percentage) 
-2. Rewrite the Date Picker Form.
