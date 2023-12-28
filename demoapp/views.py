@@ -326,15 +326,19 @@ import json,csv
 
 def region_sell_map_view(request):
     csv_file = os.path.join(settings.MEDIA_ROOT, 'area_sell.csv')
-    data = [['Code','Label', 'Sales']]
+    data = [['Code','Label', 'Sales', 'Population']]
+    sale_population = []
     with open(csv_file, 'r') as file:
         reader = csv.reader(file)
         next(reader)  # Skip the header row if present
         for row in reader:
             # Assuming the CSV has two columns: 'Country' and 'sales'
-            code, country, sales = row
-            data.append([code, country,int(float(sales))])
-    context= {'array': json.dumps(data), 'data':data[1:]}
+            code, country, sales, population = row
+            formatted_sales = "{:,}".format(int(float(sales))) + '€      '
+            formatted_population = "{:,}".format(int(float(population)))
+            data.append([code, country,int(float(sales)),int(float(population))])
+            sale_population.append([code,country,formatted_sales, formatted_population])
+    context= {'array': json.dumps(data), 'data':data[1:],'sale_population':sale_population }
     return render(request, 'demoapp/region_sell_map_view.html',context)
 
 '''

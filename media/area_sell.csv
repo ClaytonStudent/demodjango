@@ -1,21 +1,21 @@
-Code, Label, Sales
-IT-62, Lazio,5239038
-IT-25, Lombardia,2799054
-IT-52, Toscana,1807709
-IT-21, Piemonte,1728453
-IT-34, Veneto,1330057
-IT-45, Emilia-Romagna,1328940
-IT-82, Sicilia,1247029
-IT-42, Liguria,627680
-IT-57, Marche,550699
-IT-36, Friuli-Venezia Giulia,480935
-IT-75, Puglia,414496
-IT-88, Sardegna,406564
-IT-32, Trentino-Alto Adige,395224
-IT-72, Campania,381554
-IT-55, Umbria,329926
-IT-65, Abruzzo,261279
-IT-78, Calabria,232568
-IT-77, Basilicata,68888
-IT-67, Molise,58030
-IT-23, Aosta,17472
+Code, Label, Sales, Population
+IT-62, Lazio,5239038,5707112
+IT-25, Lombardia,2799054,9950742
+IT-52, Toscana,1807709,3651152
+IT-21, Piemonte,1728453,4240736
+IT-34, Veneto,1330057,4838253
+IT-45, Emilia-Romagna,1328940,4426929
+IT-82, Sicilia,1247029,4802016
+IT-42, Liguria,627680,1502624
+IT-57, Marche,550699,1480839
+IT-36, Friuli-Venezia Giulia,480935,1192191
+IT-75, Puglia,414496,3900852
+IT-88, Sardegna,406564,1575028
+IT-32, Trentino-Alto Adige,395224,1075317
+IT-72, Campania,381554,5592175
+IT-55, Umbria,329926,854137
+IT-65, Abruzzo,261279,1269860
+IT-78, Calabria,232568,1841300
+IT-77, Basilicata,68888,536659
+IT-67, Molise,58030,289840
+IT-23, Aosta,17472,122955

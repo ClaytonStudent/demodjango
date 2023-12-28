@@ -17,6 +17,14 @@
             text-align: center;
         }
 
+        th,
+        td {
+
+            text-align: center;
+            border: 1px solid black;
+            padding: 2px;
+        }
+
         .container {
             display: flex;
             /* Use flexbox to arrange items side by side */
@@ -61,21 +69,24 @@
 </head>
 
 
-<h4>Sales by Region (2023-01-01 ---- 2023-12-27)</h4>
+<h4> 大区销售图 (2023-01-01 -- 2023-12-27)</h4>
 <div class="container">
     <div id="regions_div" style="width: 900px; height: 500px;"></div>
     <table>
         <thead>
             <tr>
-                <th>Region</th>
-                <th>Sales</th>
+                <th>大区</th>
+                <th>销售</th>
+                <th>人口</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in data %}
+            {% for item in sale_population %}
             <tr>
                 <td>{{ item.1 }}</td>
-                <td style="color:#0000ff">{{ item.2 }}</td>
+                <td text-align="center" style="color:#0000ff"> {{ item.2 }} </td>
+
+                <td text-align="right" style="color: green"> {{ item.3 }} </td>
             </tr>
             {% endfor %}
         </tbody>
