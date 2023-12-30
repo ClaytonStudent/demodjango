@@ -157,22 +157,24 @@ city_to_capital = {'CH':'Abruzzo','AQ':'Abruzzo','PE':'Abruzzo','TE':'Abruzzo',
 'MT':'Basilicata', 'PZ':'Basilicata',
 'CS':'Calabria', 'CZ':'Calabria', 'KR':'Calabria', 'RC':'Calabria', 'VV':'Calabria',
 'AV':'Campania', 'BN':'Campania', 'CE':'Campania', 'NA':'Campania', 'SA':'Campania',
-'BO':'Emilia-Romagna', 'FE':'Emilia-Romagna', 'FO':'Emilia-Romagna', 'MO':'Emilia-Romagna', 'PC':'Emilia-Romagna', 'PR':'Emilia-Romagna', 'RA':'Emilia-Romagna', 'RE':'Emilia-Romagna', 'RN':'Emilia-Romagna',
+'BO':'Emilia-Romagna', 'FE':'Emilia-Romagna', 'FO':'Emilia-Romagna', 'MO':'Emilia-Romagna', 'PC':'Emilia-Romagna', 'PR':'Emilia-Romagna', 'RA':'Emilia-Romagna', 'RE':'Emilia-Romagna', 'RN':'Emilia-Romagna', 'FC':'Emilia-Romagna',
 'GO':'Friuli-Venezia Giulia', 'PN':'Friuli-Venezia Giulia', 'TS':'Friuli-Venezia Giulia', 'UD':'Friuli-Venezia Giulia',
 'FR':'Lazio', 'LT':'Lazio', 'RI':'Lazio', 'RM':'Lazio', 'VT':'Lazio',
 'GE':'Liguria', 'IM':'Liguria', 'SP':'Liguria', 'SV':'Liguria',
-'BG':'Lombardia', 'BS':'Lombardia', 'CO':'Lombardia', 'CR':'Lombardia', 'LC':'Lombardia', 'LO':'Lombardia', 'MN':'Lombardia', 'MI':'Lombardia', 'PV':'Lombardia', 'SO':'Lombardia', 'VA':'Lombardia',
-'AN':'Marche', 'AP':'Marche', 'MC':'Marche', 'PS':'Marche',
+'BG':'Lombardia', 'BS':'Lombardia', 'CO':'Lombardia', 'CR':'Lombardia', 'LC':'Lombardia', 'LO':'Lombardia', 'MN':'Lombardia', 'MI':'Lombardia', 'PV':'Lombardia', 'SO':'Lombardia', 'VA':'Lombardia','MB':'Lombardia',
+'AN':'Marche', 'AP':'Marche', 'MC':'Marche', 'PS':'Marche','PU':'Marche', 'FM':'Marche',
 'CB':'Molise', 'IS':'Molise',
 'AL':'Piemonte', 'AT':'Piemonte','BI':'Piemonte', 'CN':'Piemonte','NO':'Piemonte', 'TO':'Piemonte','VB':'Piemonte', 'VC':'Piemonte',
-'BA':'Puglia', 'BR':'Puglia', 'FG':'Puglia', 'LE':'Puglia', 'TA':'Puglia',
-'CA':'Sardegna', 'NU':'Sardegna', 'OR':'Sardegna', 'SS':'Sardegna',
+'BA':'Puglia', 'BR':'Puglia', 'FG':'Puglia', 'LE':'Puglia', 'TA':'Puglia', 'BT':'Puglia',
+'CA':'Sardegna', 'NU':'Sardegna', 'OR':'Sardegna', 'SS':'Sardegna', 'SU':'Sardegna', 'OT':'Sardegna', 'CI':'Sardegna',
 'AG':'Sicilia', 'CL':'Sicilia', 'CT':'Sicilia', 'EN':'Sicilia', 'ME':'Sicilia', 'PA':'Sicilia', 'RG':'Sicilia', 'SR':'Sicilia', 'TP':'Sicilia',
 'AR':'Toscana', 'FI':'Toscana', 'GR':'Toscana', 'LI':'Toscana', 'LU':'Toscana', 'MS':'Toscana', 'PI':'Toscana', 'PT':'Toscana', 'PO':'Toscana', 'SI':'Toscana',
 'BZ':'Trentino-Alto Adige', 'TN':'Trentino-Alto Adige',
 'PG':'Umbria', 'TR':'Umbria',
 'AO':'Valle D\'Aosta',
-'BL':'Veneto', 'PD':'Veneto', 'RO':'Veneto', 'TV':'Veneto', 'VE':'Veneto', 'VI':'Veneto', 'VR':'Veneto'}
+'BL':'Veneto', 'PD':'Veneto', 'RO':'Veneto', 'TV':'Veneto', 'VE':'Veneto', 'VI':'Veneto', 'VR':'Veneto',
+'MX':'EE', 'AU':'EE', 'BE':'EE'
+}
 
 def analysis_client_report(filename1,filename2):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
@@ -252,6 +254,7 @@ def get_merged(grouped_sale, df_client_earn,month_names):
     merged.loc[:, '大区'] = merged['省份'].map(city_to_capital).fillna(merged['省份'])
     selected_columns = ['客户经办人','城市','省份','大区']
     merged[selected_columns] = merged[selected_columns].fillna('未知')
+    merged['大区'] = merged['大区'].replace('未知','Campania')
     selected_columns = ['客户编号','客户名称','客户经办人','手机','税号','地址', '城市', '省份','大区', '分组', '下单次数', '最近下单日期', '金额(€)', '本次收款', '欠款', '欠款率(%)','利率(%)'] + month_names
     merged = merged[selected_columns]
     #name_match = {'本次收款':'收款','金额(€)':'金额',}
