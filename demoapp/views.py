@@ -9,6 +9,7 @@ import pandas as pd
 import os
 from django.conf import settings
 from django.http import FileResponse
+from PyPDF2 import PdfReader
 # Create your views here.
 def index(request):
     context = {"data":"Home Page of Django App"}
@@ -345,5 +346,51 @@ def region_sell_map_view(request):
     return render(request, 'demoapp/region_sell_map_view.html',context)
 
 '''
-Salesman Sell Map View
+Express Info
 '''
+def express_info_report(request):
+    if request.method == 'POST':
+        print('DEBUG')
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        if fs.exists(myfile2.name):
+            fs.delete(myfile2.name)
+        filename1 = fs.save(myfile1.name, myfile1)
+        filename2 = fs.save(myfile2.name, myfile2)
+        data = express_info(myfile1.name,myfile2.name)
+        return render(request, 'demoapp/express_info_report.html', {'data':data})
+    return render(request, 'demoapp/express_info_report.html')
+
+def express_info(filename1,filename2):
+    file1 = os.path.join(settings.MEDIA_ROOT, filename1)
+    file2 = os.path.join(settings.MEDIA_ROOT, filename2)
+    print(file1)
+    print(file2)
+    merged_df = extract_express_info(file1,file2)
+    merged_df.to_excel('快递信息.xlsx', index=False)
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ExpressReport.xlsx')) as writer:
+        merged_df.to_excel(writer, sheet_name='快递报告', index=False) 
+    data = {}
+    return data
+
+def extract_express_info(file1,file2):
+    reader = PdfReader(file1)
+    wholeline=[]
+    for page in reader.pages:
+            contents = page.extract_text().split('\n')   
+            for i,v in enumerate(contents):
+                    if len(v) > 100 and v[:4]=='2024':
+                            wholeline.append([v[-8:],v[11:22]])
+    df_pdf = pd.DataFrame(wholeline,columns=['发票单号','快递单号'])
+    converter_columns = ['销售单','发票单号']
+    converters = {c:lambda x: str(x) for c in converter_columns}
+    df = pd.read_html(file2,converters=converters)[0]
+    df.drop(df.tail(1).index,inplace=True)
+    selected_columns = ['客户','收付款方式','金额(€)','销售单','发票单号','经办人']
+    df = df[selected_columns]
+    merged_df = df.merge(df_pdf, on='发票单号', how='right')
+    return merged_df
+

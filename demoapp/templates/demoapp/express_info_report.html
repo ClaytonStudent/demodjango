@@ -1,0 +1,68 @@
+{% extends 'demoapp/base.html' %}
+{% block content %}
+
+<head>
+    <style>
+        body {
+            background-image: none;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+            /* Remove the background image */
+            /* Add any other styles or background settings as needed */
+        }
+
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            align-items: center;
+
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin-top: 50px;
+            font-size: 18px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Your report content goes here -->
+    <h3>文件1: GLS PDF 文件</h3>
+    <h3>文件2: 博讯 - 销售 - 详细查询 - 时间:(7天前-当天) - 销售报表</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="myfile1">
+        <input type="file" name="myfile2">
+        <button type="submit">Upload</button>
+    </form>
+
+    {% if data %}
+    <p class="text-dark"> 处理完成,请下载文件 </p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download File</a></p>
+    {% else %}
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download Previous File</a></p>
+    {% endif %}
+</body>
+
+
+{% endblock content %}
