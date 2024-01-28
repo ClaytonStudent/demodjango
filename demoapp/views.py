@@ -10,6 +10,7 @@ import os
 from django.conf import settings
 from django.http import FileResponse
 from PyPDF2 import PdfReader
+from datetime import date
 # Create your views here.
 def index(request):
     context = {"data":"Home Page of Django App"}
@@ -370,7 +371,7 @@ def express_info(filename1,filename2):
     print(file1)
     print(file2)
     merged_df = extract_express_info(file1,file2)
-    merged_df.to_excel('快递信息.xlsx', index=False)
+    #merged_df.to_excel('快递信息.xlsx', index=False)
     with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ExpressReport.xlsx')) as writer:
         merged_df.to_excel(writer, sheet_name='快递报告', index=False) 
     data = {}
@@ -394,3 +395,127 @@ def extract_express_info(file1,file2):
     merged_df = df.merge(df_pdf, on='发票单号', how='right')
     return merged_df
 
+'''
+BRT Express 
+'''
+def brt_express_report(request):
+    if request.method == 'POST':
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        if fs.exists(myfile2.name):
+            fs.delete(myfile2.name)
+        fs.save(myfile1.name, myfile1)
+        fs.save(myfile2.name, myfile2)
+        data = brt_express(myfile1.name,myfile2.name)
+        return render(request, 'demoapp/brt_express_report.html', {'data':data})
+    return render(request, 'demoapp/brt_express_report.html')
+
+def brt_express(filename1,filename2):
+    file1 = os.path.join(settings.MEDIA_ROOT, filename1)
+    file2 = os.path.join(settings.MEDIA_ROOT, filename2)
+    wholeline,date_name = brt_extract_content(file1)
+    df_xls,df_xlsx = brt_prepare_dfs(file2,wholeline)
+    df = pd.merge(df_xlsx, df_xls[['client','euro','agent','order_id','invoice_id']], on ='client', how ="left")
+    df = brt_prepare_df(df,df_xls)
+    df.rename(columns={'client':'客户','transport':'收付款方式','euro':'金额(€)','order_id':'销售单','invoice_id':'发票单号','agent':'经办人'}, inplace=True)
+    df['日期'] = date_name.replace('_','/')
+    df = df[['日期','客户','收付款方式','金额(€)','销售单','发票单号','经办人']]
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'BRT_'+date_name+'.xlsx')) as writer:
+        df.to_excel(writer, sheet_name=date_name, index=False) 
+    data = {'date_name':date_name}
+    return data
+
+def brt_extract_content(pdf_file):
+    reader = PdfReader(pdf_file)
+    wholeline=[]
+    date_name = date.today().strftime("%d_%m_%Y")
+    for page in reader.pages:
+        contents = page.extract_text().split('\n')        
+        for i,v in enumerate(contents):
+            if (v == "Tipo Servizio"):
+                if (contents[i-5] == "EUR"):
+                    wholeline.append([contents[i-12], contents[i-7], contents[i-6].replace('.','').replace(',','.')])
+                else:
+                    wholeline.append([contents[i-9]])
+            if 'Del' in v:
+                        date_name = contents[i+1].replace('/','_')
+    return wholeline,date_name
+
+def brt_prepare_dfs(xls_name,wholeline):
+    print(xls_name)
+    df_xls = pd.read_html(xls_name,converters={'销售单': str,'发票单号':str})[0]
+    print(df_xls)
+    df_xls.drop(df_xls.tail(1).index,inplace=True)
+    df_xls.rename(columns={"客户": "client", "销售单":"order_id", "经办人":"agent",'金额(€)':'euro','发票单号':'invoice_id','收付款方式':'transport'  }, inplace=True)
+    df_xls['client']= df_xls['client'].str.rstrip()
+    df_xls['client']= df_xls['client'].str.lstrip()
+
+    df_xlsx = pd.DataFrame(wholeline,columns=['client','transport','euro'])
+    df_xlsx['client']= df_xlsx['client'].str.rstrip()
+    df_xlsx['client']= df_xlsx['client'].str.lstrip()
+    df_xlsx['euro'] = df_xlsx['euro'].astype(float)
+    return df_xls,df_xlsx
+
+def brt_prepare_df(df,df_xls):
+    df['euro_x'].fillna(df['euro_y'], inplace=True)
+    df['euro'] = df['euro_x']
+    df = df.drop(['euro_x', 'euro_y'], axis=1)
+
+
+    # Assuming you have DataFrames df and df_xls with columns 'client', 'transport', 'agent', 'order_id', 'euro'
+    # Merge the two DataFrames based on the 'euro' column for 'order_id'
+    merged_df_order_id = pd.merge(df[['client', 'transport', 'agent', 'order_id', 'euro']],
+                                df_xls[['euro', 'order_id']],
+                                on='euro',
+                                how='left',
+                                suffixes=('_df', '_xls'))
+
+    # Fill NaN values in 'order_id_df' with values from 'order_id_xls'
+    merged_df_order_id['order_id_df'].fillna(merged_df_order_id['order_id_xls'], inplace=True)
+
+    # Drop the temporary 'order_id_xls' column if needed
+    merged_df_order_id = merged_df_order_id.drop('order_id_xls', axis=1)
+
+    # Update the original df DataFrame with the filled 'order_id' values
+    df['order_id'] = merged_df_order_id['order_id_df']
+
+    # Merge the two DataFrames based on the 'euro' column for 'agent'
+    merged_df_agent = pd.merge(df[['client', 'transport', 'agent', 'order_id', 'euro']],
+                            df_xls[['euro', 'agent']],
+                            on='euro',
+                            how='left',
+                            suffixes=('_df', '_xls'))
+
+    # Fill NaN values in 'agent_df' with values from 'agent_xls'
+    merged_df_agent['agent_df'].fillna(merged_df_agent['agent_xls'], inplace=True)
+
+    # Drop the temporary 'agent_xls' column if needed
+    merged_df_agent = merged_df_agent.drop('agent_xls', axis=1)
+
+    # Update the original df DataFrame with the filled 'agent' values
+    df['agent'] = merged_df_agent['agent_df']
+
+    # Merge the two DataFrames based on the 'euro' column for 'transport'
+    merged_df_transport = pd.merge(df[['client', 'transport', 'agent', 'order_id', 'euro']],
+                                df_xls[['euro', 'transport']],
+                                on='euro',
+                                how='left',
+                                suffixes=('_df', '_xls'))
+
+    # Fill NaN values in 'transport_df' with values from 'transport_xls'
+    merged_df_transport['transport_df'].fillna(merged_df_transport['transport_xls'], inplace=True)
+    
+
+    # Drop the temporary 'transport_xls' column if needed
+    merged_df_transport = merged_df_transport.drop('transport_xls', axis=1)
+
+    # Update the original df DataFrame with the filled 'transport' values and convert to string
+    df['transport'] = merged_df_transport['transport_df'].astype(str).str.rstrip('.0')
+    df['transport'] = df['transport'].str.replace('nan','')
+
+    # Display the resulting df DataFrame
+    #print(df)
+    return df

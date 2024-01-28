@@ -47,8 +47,8 @@
 
 <body>
     <!-- Your report content goes here -->
-    <h1>GLS快递信息</h1>
-    <h3>文件1: GLS PDF 文件</h3>
+    <h1>BRT快递信息</h1>
+    <h3>文件1: BRT PDF 文件</h3>
     <h3>文件2: 博讯 - 销售 - 详细查询 - 时间:(7天前-当天) - 销售报表</h3>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -59,9 +59,12 @@
 
     {% if data %}
     <p class="text-dark"> 处理完成,请下载文件 </p>
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download File</a></p>
+    <p class="text-dark"> 文件日期 {{data.date_name}} </p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT_{{data.date_name}}.xlsx">Download File</a></p>
     {% else %}
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download Previous File</a></p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT_{{data.date_name}}.xlsx">Download Previous
+            File</a>
+    </p>
     {% endif %}
 </body>
 
