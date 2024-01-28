@@ -14,7 +14,7 @@ urlpatterns = [
     path('client_report/', views.client_report, name='client_report'),
     path('download_file/', views.download_file, name='download_file'),
     path('region_sell_map_view/', views.region_sell_map_view, name='region_sell_map_view'),
-    path('express_info_report',views.express_info_report,name='express_info_report'),
+    path('gls_express_report',views.gls_express_report,name='gls_express_report'),
     path('btr_express_report/',views.brt_express_report,name='btr_express_report'),
 ]
 

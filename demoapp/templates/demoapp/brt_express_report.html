@@ -60,9 +60,9 @@
     {% if data %}
     <p class="text-dark"> 处理完成,请下载文件 </p>
     <p class="text-dark"> 文件日期 {{data.date_name}} </p>
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT_{{data.date_name}}.xlsx">Download File</a></p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT.xlsx">Download File</a></p>
     {% else %}
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT_{{data.date_name}}.xlsx">Download Previous
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=BRT.xlsx">Download Previous
             File</a>
     </p>
     {% endif %}

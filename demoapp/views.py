@@ -303,11 +303,6 @@ def get_styled_df(merged,month_names):
     styled_df = styled_df.applymap(lambda x: month_color(x),subset=month_names)
     return styled_df
 
-
-# with pd.ExcelWriter('客户分析.xlsx') as writer:
-#    merged.to_excel(writer, sheet_name='客户报告', index=False)
-
-
 def download_file(request):
     source = request.GET.get('source', None)
     print(source)
@@ -349,7 +344,7 @@ def region_sell_map_view(request):
 '''
 Express Info
 '''
-def express_info_report(request):
+def gls_express_report(request):
     if request.method == 'POST':
         print('DEBUG')
         myfile1 = request.FILES['myfile1']
@@ -361,23 +356,20 @@ def express_info_report(request):
             fs.delete(myfile2.name)
         filename1 = fs.save(myfile1.name, myfile1)
         filename2 = fs.save(myfile2.name, myfile2)
-        data = express_info(myfile1.name,myfile2.name)
-        return render(request, 'demoapp/express_info_report.html', {'data':data})
-    return render(request, 'demoapp/express_info_report.html')
+        data = gls_save_df(myfile1.name,myfile2.name)
+        return render(request, 'demoapp/gls_express_report.html', {'data':data})
+    return render(request, 'demoapp/gls_express_report.html')
 
-def express_info(filename1,filename2):
+def gls_save_df(filename1,filename2):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
-    print(file1)
-    print(file2)
-    merged_df = extract_express_info(file1,file2)
-    #merged_df.to_excel('快递信息.xlsx', index=False)
-    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'ExpressReport.xlsx')) as writer:
+    merged_df = gls_generate_df(file1,file2)
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'GLS.xlsx')) as writer:
         merged_df.to_excel(writer, sheet_name='快递报告', index=False) 
     data = {}
     return data
 
-def extract_express_info(file1,file2):
+def gls_generate_df(file1,file2):
     reader = PdfReader(file1)
     wholeline=[]
     for page in reader.pages:
@@ -409,26 +401,23 @@ def brt_express_report(request):
             fs.delete(myfile2.name)
         fs.save(myfile1.name, myfile1)
         fs.save(myfile2.name, myfile2)
-        data = brt_express(myfile1.name,myfile2.name)
+        data = brt_save_df(myfile1.name,myfile2.name)
         return render(request, 'demoapp/brt_express_report.html', {'data':data})
     return render(request, 'demoapp/brt_express_report.html')
 
-def brt_express(filename1,filename2):
+def brt_save_df(filename1,filename2):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
-    wholeline,date_name = brt_extract_content(file1)
-    df_xls,df_xlsx = brt_prepare_dfs(file2,wholeline)
-    df = pd.merge(df_xlsx, df_xls[['client','euro','agent','order_id','invoice_id']], on ='client', how ="left")
-    df = brt_prepare_df(df,df_xls)
-    df.rename(columns={'client':'客户','transport':'收付款方式','euro':'金额(€)','order_id':'销售单','invoice_id':'发票单号','agent':'经办人'}, inplace=True)
-    df['日期'] = date_name.replace('_','/')
-    df = df[['日期','客户','收付款方式','金额(€)','销售单','发票单号','经办人']]
-    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'BRT_'+date_name+'.xlsx')) as writer:
+    wholeline,date_name = brt_content_from_pdf(file1)
+    df_xls,df = brt_merge_df(file2,wholeline)
+    df = brt_fillna_df(df,df_xls)
+    df = brt_add_date_df(df,date_name)
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'BRT.xlsx')) as writer:
         df.to_excel(writer, sheet_name=date_name, index=False) 
     data = {'date_name':date_name}
     return data
 
-def brt_extract_content(pdf_file):
+def brt_content_from_pdf(pdf_file):
     reader = PdfReader(pdf_file)
     wholeline=[]
     date_name = date.today().strftime("%d_%m_%Y")
@@ -444,7 +433,7 @@ def brt_extract_content(pdf_file):
                         date_name = contents[i+1].replace('/','_')
     return wholeline,date_name
 
-def brt_prepare_dfs(xls_name,wholeline):
+def brt_merge_df(xls_name,wholeline):
     print(xls_name)
     df_xls = pd.read_html(xls_name,converters={'销售单': str,'发票单号':str})[0]
     print(df_xls)
@@ -457,9 +446,10 @@ def brt_prepare_dfs(xls_name,wholeline):
     df_xlsx['client']= df_xlsx['client'].str.rstrip()
     df_xlsx['client']= df_xlsx['client'].str.lstrip()
     df_xlsx['euro'] = df_xlsx['euro'].astype(float)
-    return df_xls,df_xlsx
+    df = pd.merge(df_xlsx, df_xls[['client','euro','agent','order_id','invoice_id']], on ='client', how ="left")
+    return df_xls,df
 
-def brt_prepare_df(df,df_xls):
+def brt_fillna_df(df,df_xls):
     df['euro_x'].fillna(df['euro_y'], inplace=True)
     df['euro'] = df['euro_x']
     df = df.drop(['euro_x', 'euro_y'], axis=1)
@@ -515,7 +505,10 @@ def brt_prepare_df(df,df_xls):
     # Update the original df DataFrame with the filled 'transport' values and convert to string
     df['transport'] = merged_df_transport['transport_df'].astype(str).str.rstrip('.0')
     df['transport'] = df['transport'].str.replace('nan','')
+    return df
 
-    # Display the resulting df DataFrame
-    #print(df)
+def brt_add_date_df(df,date_name):
+    df.rename(columns={'client':'客户','transport':'收付款方式','euro':'金额(€)','order_id':'销售单','invoice_id':'发票单号','agent':'经办人'}, inplace=True)
+    df['日期'] = date_name.replace('_','/')
+    df = df[['日期','客户','收付款方式','金额(€)','销售单','发票单号','经办人']]
     return df

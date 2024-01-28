@@ -59,9 +59,9 @@
 
     {% if data %}
     <p class="text-dark"> 处理完成,请下载文件 </p>
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download File</a></p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=GLS.xlsx">Download File</a></p>
     {% else %}
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ExpressReport.xlsx">Download Previous File</a></p>
+    <p class="text-dark"><a href="{% url 'download_file' %}?source=GLS.xlsx">Download Previous File</a></p>
     {% endif %}
 </body>
 
