@@ -348,7 +348,8 @@ def gls_save_df(filename1,filename2):
     merged_df = gls_generate_df(file1,file2)
     with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'GLS.xlsx')) as writer:
         merged_df.to_excel(writer, sheet_name='快递报告', index=False) 
-    data = {}
+    date_name = date.today().strftime("%d_%m_%Y")
+    data = {'date_name':date_name}
     return data
 
 def gls_generate_df(file1,file2):
