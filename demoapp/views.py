@@ -1,16 +1,17 @@
-from wsgiref.simple_server import demo_app
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import View, CreateView, UpdateView,DeleteView
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 from .models import Product
 from .forms import ProductForm
-from django.core.files.storage import FileSystemStorage
 import pandas as pd
 import os
-from django.conf import settings
 from django.http import FileResponse
 from PyPDF2 import PdfReader
-from datetime import date
+from datetime import date, datetime, timedelta
+import json,csv
+
 # Create your views here.
 def index(request):
     context = {"data":"Home Page of Django App"}
@@ -41,19 +42,12 @@ class ProductDelete(DeleteView):
     success_url = reverse_lazy('product_list')
 
 '''
-Stock Value Report Start
+1. Stock Value Report
 '''
 def stock_value_report(request):
     if request.method == 'POST':
-        print('DEBUG')
         myfile1 = request.FILES['myfile1']
         myfile2 = request.FILES['myfile2']
-       # uploaded_files = request.FILES.getlist('myfile')[:-1]
-       # for uploaded_file in uploaded_files:
-       #     if '.csv' in uploaded_file.name:
-       #         myfile1 = uploaded_file
-       #     else:
-       #         myfile2 = uploaded_file
         fs = FileSystemStorage()
         if fs.exists(myfile1.name):
             fs.delete(myfile1.name)
@@ -64,13 +58,9 @@ def stock_value_report(request):
         data = analysis_stock_value_report(filename1,filename2)
         return render(request, 'demoapp/stock_value_report.html', {'data':data})
     return render(request, 'demoapp/stock_value_report.html')
-
-
 def analysis_stock_value_report(filename1,filename2):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
-    print(file1)
-    print(file2)
     df_product = get_product(file1)
     df_stock = pd.read_html(file2)[0]
     df_stock = get_stock(df_stock)
@@ -124,37 +114,11 @@ def get_stock_value(merged_df):
     stock_value = avg_stock + remain_stock
     stock_value_without_iva = merged_df['小计'].sum()
     return int(stock_value), int(stock_value_without_iva)
-'''
-Stock Value Report End
-'''
 
 
 '''
-Client Report Start
+2. Client Report
 '''
-
-# table one: client sale
-def client_report(request):
-    if request.method == 'POST':
-        #uploaded_files = request.FILES.getlist('myfile')[:-1]
-        #myfile1 = uploaded_files[0]
-        #myfile2 = uploaded_files[1]
-        myfile1 = request.FILES['myfile1']
-        myfile2 = request.FILES['myfile2']
-        fs = FileSystemStorage()
-        if fs.exists(myfile1.name):
-            fs.delete(myfile1.name)
-        if fs.exists(myfile2.name):
-            fs.delete(myfile2.name)
-        filename1 = fs.save(myfile1.name, myfile1)
-        filename2 = fs.save(myfile2.name, myfile2)
-        data = analysis_client_report(filename1,filename2)
-        #request.session['merged'] = data['merged']
-        return render(request, 'demoapp/client_report.html', {'data':data})
-    return render(request, 'demoapp/client_report.html')
-
-from datetime import datetime, timedelta
-
 city_to_capital = {'CH':'Abruzzo','AQ':'Abruzzo','PE':'Abruzzo','TE':'Abruzzo', 
 'MT':'Basilicata', 'PZ':'Basilicata',
 'CS':'Calabria', 'CZ':'Calabria', 'KR':'Calabria', 'RC':'Calabria', 'VV':'Calabria',
@@ -178,11 +142,25 @@ city_to_capital = {'CH':'Abruzzo','AQ':'Abruzzo','PE':'Abruzzo','TE':'Abruzzo',
 'MX':'EE', 'AU':'EE', 'BE':'EE'
 }
 
+def client_report(request):
+    if request.method == 'POST':
+        myfile1 = request.FILES['myfile1']
+        myfile2 = request.FILES['myfile2']
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        if fs.exists(myfile2.name):
+            fs.delete(myfile2.name)
+        filename1 = fs.save(myfile1.name, myfile1)
+        filename2 = fs.save(myfile2.name, myfile2)
+        data = analysis_client_report(filename1,filename2)
+        #request.session['merged'] = data['merged']
+        return render(request, 'demoapp/client_report.html', {'data':data})
+    return render(request, 'demoapp/client_report.html')
+
 def analysis_client_report(filename1,filename2):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
     file2 = os.path.join(settings.MEDIA_ROOT, filename2)
-    print(file1)
-    print(file2)
     df_client_sale = read_in_df_client_sale(file1)
     df_client_earn = read_in_df_client_earn(file2)
     sales_by_month, month_names = get_sale_by_month(df_client_sale)
@@ -224,7 +202,6 @@ def get_sale_by_month(df_client_sale):
     month_names = list(sales_by_month.columns.values[1:])
     return sales_by_month, month_names
 
-
 def get_grouped_sale(df_client_sale,sales_by_month):
     grouped_sale = df_client_sale.groupby('客户编号').sum()
     grouped_sale['下单次数'] = df_client_sale['客户编号'].value_counts()
@@ -262,7 +239,6 @@ def get_merged(grouped_sale, df_client_earn,month_names):
     #name_match = {'本次收款':'收款','金额(€)':'金额',}
     #merged.rename(columns=name_match, inplace=True)
     return merged
-
 
 def add_handler_area_sell(merged):
     handler_area_sell =merged.groupby(['客户经办人', '大区'])['金额(€)'].sum().reset_index().sort_values('金额(€)', ascending=False)
@@ -303,26 +279,33 @@ def get_styled_df(merged,month_names):
     styled_df = styled_df.applymap(lambda x: month_color(x),subset=month_names)
     return styled_df
 
-def download_file(request):
-    source = request.GET.get('source', None)
-    print(source)
-    # Define the path to the file you want to download
-    file_path = os.path.join(settings.MEDIA_ROOT, source)
-    # os.path.join(settings.MEDIA_ROOT, filename1)
-    # Open and serve the file for download
-    file = open(file_path, 'rb')
-    #with open(file_path, 'rb') as file:
-    response = FileResponse(file)
-    #response['Content-Disposition'] = 'attachment; filename="{source}"'
-    response['Content-Disposition'] = f'attachment; filename="{source}"'
-    return response
+
+'''
+3. Client Check
+'''
+def client_check(request):
+    client_address_missing, client_salesman_missing, client_taxnumber_missing,client_number = client_check_missing_value() 
+    data = {
+        'client_address_missing':client_address_missing,
+        'client_salesman_missing':client_salesman_missing,
+        'client_taxnumber_missing':client_taxnumber_missing,
+        'client_number':client_number,
+    }
+    return render(request, 'demoapp/client_check.html', {'data':data})
+
+def client_check_missing_value():
+    client_report_xlsx = os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')
+    df = pd.read_excel(client_report_xlsx, sheet_name='客户销售',converters={'客户编号': str,'手机':str,'税号':str})
+    client_number = df.shape[0]
+    client_address_missing = df[df['地址'].isna() | df['地址'].str.contains('未知')]['客户编号'].values.tolist()
+    client_salesman_missing = df[df['客户经办人'].isna() | df['客户经办人'].str.contains('未知')]['客户编号'].values.tolist()
+    client_taxnumber_missing = df[df['税号'].isna() | df['税号'].str.contains('未知')]['客户编号'].values.tolist()
+    return client_address_missing, client_salesman_missing, client_taxnumber_missing, client_number
 
 
 '''
-Region Sell Map View
+4. Region Sell Map View
 '''
-from django.shortcuts import render
-import json,csv
 
 def region_sell_map_view(request):
     csv_file = os.path.join(settings.MEDIA_ROOT, 'area_sell.csv')
@@ -342,11 +325,10 @@ def region_sell_map_view(request):
     return render(request, 'demoapp/region_sell_map_view.html',context)
 
 '''
-Express Info
+5. GLS Express Report
 '''
 def gls_express_report(request):
     if request.method == 'POST':
-        print('DEBUG')
         myfile1 = request.FILES['myfile1']
         myfile2 = request.FILES['myfile2']
         fs = FileSystemStorage()
@@ -354,8 +336,8 @@ def gls_express_report(request):
             fs.delete(myfile1.name)
         if fs.exists(myfile2.name):
             fs.delete(myfile2.name)
-        filename1 = fs.save(myfile1.name, myfile1)
-        filename2 = fs.save(myfile2.name, myfile2)
+        fs.save(myfile1.name, myfile1)
+        fs.save(myfile2.name, myfile2)
         data = gls_save_df(myfile1.name,myfile2.name)
         return render(request, 'demoapp/gls_express_report.html', {'data':data})
     return render(request, 'demoapp/gls_express_report.html')
@@ -388,7 +370,7 @@ def gls_generate_df(file1,file2):
     return merged_df
 
 '''
-BRT Express 
+6. BRT Express Report
 '''
 def brt_express_report(request):
     if request.method == 'POST':
@@ -434,9 +416,7 @@ def brt_content_from_pdf(pdf_file):
     return wholeline,date_name
 
 def brt_merge_df(xls_name,wholeline):
-    print(xls_name)
     df_xls = pd.read_html(xls_name,converters={'销售单': str,'发票单号':str})[0]
-    print(df_xls)
     df_xls.drop(df_xls.tail(1).index,inplace=True)
     df_xls.rename(columns={"客户": "client", "销售单":"order_id", "经办人":"agent",'金额(€)':'euro','发票单号':'invoice_id','收付款方式':'transport'  }, inplace=True)
     df_xls['client']= df_xls['client'].str.rstrip()
@@ -513,24 +493,19 @@ def brt_add_date_df(df,date_name):
     df = df[['日期','客户','收付款方式','金额(€)','销售单','发票单号','经办人']]
     return df
 
-'''
-Client Check
-'''
-def client_check(request):
-    client_address_missing, client_salesman_missing, client_taxnumber_missing,client_number = client_check_missing_value() 
-    data = {
-        'client_address_missing':client_address_missing,
-        'client_salesman_missing':client_salesman_missing,
-        'client_taxnumber_missing':client_taxnumber_missing,
-        'client_number':client_number,
-    }
-    return render(request, 'demoapp/client_check.html', {'data':data})
 
-def client_check_missing_value():
-    client_report_xlsx = os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')
-    df = pd.read_excel(client_report_xlsx, sheet_name='客户销售',converters={'客户编号': str,'手机':str,'税号':str})
-    client_number = df.shape[0]
-    client_address_missing = df[df['地址'].isna() | df['地址'].str.contains('未知')]['客户编号'].values.tolist()
-    client_salesman_missing = df[df['客户经办人'].isna() | df['客户经办人'].str.contains('未知')]['客户编号'].values.tolist()
-    client_taxnumber_missing = df[df['税号'].isna() | df['税号'].str.contains('未知')]['客户编号'].values.tolist()
-    return client_address_missing, client_salesman_missing, client_taxnumber_missing, client_number
+'''
+Download File
+'''
+def download_file(request):
+    source = request.GET.get('source', None)
+    # Define the path to the file you want to download
+    file_path = os.path.join(settings.MEDIA_ROOT, source)
+    # os.path.join(settings.MEDIA_ROOT, filename1)
+    # Open and serve the file for download
+    file = open(file_path, 'rb')
+    #with open(file_path, 'rb') as file:
+    response = FileResponse(file)
+    #response['Content-Disposition'] = 'attachment; filename="{source}"'
+    response['Content-Disposition'] = f'attachment; filename="{source}"'
+    return response
