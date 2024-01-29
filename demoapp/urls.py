@@ -12,6 +12,7 @@ urlpatterns = [
     path("product_delete/<int:pk>/", views.ProductDelete.as_view(),name="product_delete"),
     path('stock_value_report/', views.stock_value_report, name='stock_value_report'),
     path('client_report/', views.client_report, name='client_report'),
+    path('client_check/', views.client_check, name='client_check'),
     path('download_file/', views.download_file, name='download_file'),
     path('region_sell_map_view/', views.region_sell_map_view, name='region_sell_map_view'),
     path('gls_express_report',views.gls_express_report,name='gls_express_report'),

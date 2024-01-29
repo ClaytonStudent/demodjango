@@ -512,3 +512,25 @@ def brt_add_date_df(df,date_name):
     df['日期'] = date_name.replace('_','/')
     df = df[['日期','客户','收付款方式','金额(€)','销售单','发票单号','经办人']]
     return df
+
+'''
+Client Check
+'''
+def client_check(request):
+    client_address_missing, client_salesman_missing, client_taxnumber_missing,client_number = client_check_missing_value() 
+    data = {
+        'client_address_missing':client_address_missing,
+        'client_salesman_missing':client_salesman_missing,
+        'client_taxnumber_missing':client_taxnumber_missing,
+        'client_number':client_number,
+    }
+    return render(request, 'demoapp/client_check.html', {'data':data})
+
+def client_check_missing_value():
+    client_report_xlsx = os.path.join(settings.MEDIA_ROOT, 'ClientReport.xlsx')
+    df = pd.read_excel(client_report_xlsx, sheet_name='客户销售',converters={'客户编号': str,'手机':str,'税号':str})
+    client_number = df.shape[0]
+    client_address_missing = df[df['地址'].isna() | df['地址'].str.contains('未知')]['客户编号'].values.tolist()
+    client_salesman_missing = df[df['客户经办人'].isna() | df['客户经办人'].str.contains('未知')]['客户编号'].values.tolist()
+    client_taxnumber_missing = df[df['税号'].isna() | df['税号'].str.contains('未知')]['客户编号'].values.tolist()
+    return client_address_missing, client_salesman_missing, client_taxnumber_missing, client_number
