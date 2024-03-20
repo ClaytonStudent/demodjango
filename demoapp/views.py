@@ -496,6 +496,32 @@ def brt_add_date_df(df,date_name):
 
 
 '''
+7. Supergross Update
+'''
+def boson_to_supergross(request):
+    if request.method == 'POST':
+        myfile = request.FILES['myfile']
+        fs = FileSystemStorage()
+        if fs.exists(myfile.name):
+            fs.delete(myfile.name)
+        fs.save(myfile.name, myfile)
+        data = boson_product_reformat(myfile.name)
+        return render(request, 'demoapp/boson_to_supergross.html', {'data':data})
+    return render(request, 'demoapp/boson_to_supergross.html')
+    
+def boson_product_reformat(file_name):
+    csv_file = os.path.join(settings.MEDIA_ROOT, file_name)
+    df = pd.read_csv(csv_file,dtype={'product_model': 'string'},index_col=False)
+    df = df[df['valid_grade']==1]
+    df = df[['product_model','product_description','middle_quantity','sale_price','stockpile_quantity']]
+    df['Meta: _alg_wc_pq_min'] = df['middle_quantity']
+    df.rename(columns={'product_model':'SKU','product_description':'Name','stockpile_quantity':'Stock','middle_quantity':'Meta: _alg_wc_pq_step'},inplace=True)
+    df = df.astype({"SKU": str})
+    df.to_csv(os.path.join(settings.MEDIA_ROOT, 'Boson_to_Supergross.csv'),index=False)
+    data = {'records':df.shape[0]}
+    return data
+
+'''
 Download File
 '''
 def download_file(request):

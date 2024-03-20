@@ -28,7 +28,7 @@ creds.js
 *.tsv.gz
 *.xls
 *.pdf
-
+*.csv
 
 # Mac/OSX
 .DS_Store

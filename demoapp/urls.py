@@ -17,5 +17,6 @@ urlpatterns = [
     path('region_sell_map_view/', views.region_sell_map_view, name='region_sell_map_view'),
     path('gls_express_report',views.gls_express_report,name='gls_express_report'),
     path('btr_express_report/',views.brt_express_report,name='btr_express_report'),
+    path('boson_to_supergross/',views.boson_to_supergross,name='boson_to_supergross'),
 ]
 
