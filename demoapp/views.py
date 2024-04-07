@@ -522,6 +522,65 @@ def boson_product_reformat(file_name):
     return data
 
 '''
+8. Overdue Report
+'''
+def overdue_report(request):
+    if request.method == 'POST':
+        myfile1 = request.FILES['myfile1']
+        due_date = request.POST['source1']
+        #print(due_date)
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        filename1 = fs.save(myfile1.name, myfile1)
+        data = analysis_overdue_report(filename1,due_date)
+        return render(request, 'demoapp/overdue_report.html', {'data':data})
+    return render(request, 'demoapp/overdue_report.html')
+
+def analysis_overdue_report(filename1,due_date):
+    file1 = os.path.join(settings.MEDIA_ROOT, filename1)
+    data = generate_overdue_data(file1,due_date)
+    return data
+
+def generate_overdue_data(file1,due_date):
+# Readin File
+    converter_columns = ['销售单']
+    converters = {c:lambda x: str(x) for c in converter_columns}
+    df = pd.read_html(file1,converters=converters)[0]
+    df.drop(df.tail(1).index,inplace=True)
+
+    # prepare dataframe
+    selected_columns = ['日期', '客户ID号','销售单','承兑日期', '付款日期','金额(€)']
+    df = df[selected_columns]
+    df = df[df['付款日期'].isna()]
+    df.drop('付款日期',axis=1,inplace=True)
+
+    # convert to datetime
+    df['日期'] = pd.to_datetime(df['日期'])
+    df['承兑日期'] = pd.to_datetime(df['承兑日期'], errors='coerce')
+
+    # fill in empty due date
+    df.loc[df['承兑日期'].isna(), '承兑日期'] = df['日期'] + pd.Timedelta(days=10)
+    # calculate overdue
+    df['已逾期'] = df['承兑日期'] < pd.to_datetime(due_date)
+    df['逾期天数'] = (pd.to_datetime(due_date) - df['承兑日期']).dt.days
+    df = df[df['已逾期']]
+
+    # calculate overdue price
+    overdue_price = df['金额(€)'].sum().round(2)
+    overdue_price_over_365 = df[(df['逾期天数']>365)]['金额(€)'].sum().round(2)
+    overdue_within_30_days = df[(df['逾期天数']<=30)]['金额(€)'].sum().round(2)
+    data = {
+        "due_date": due_date,
+        "overdue_price": overdue_price,
+        "overdue_price_over_365": overdue_price_over_365,
+        "overdue_within_30_days": overdue_within_30_days,
+    }
+    return data
+
+
+
+'''
 Download File
 '''
 def download_file(request):
