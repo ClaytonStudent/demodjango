@@ -539,7 +539,7 @@ def overdue_report(request):
 
 def analysis_overdue_report(filename1,due_date):
     file1 = os.path.join(settings.MEDIA_ROOT, filename1)
-    data = generate_overdue_data(file1,due_date)
+    data = generate_overdue_data_based_on_finace(file1,due_date)
     return data
 
 def generate_overdue_data(file1,due_date):
@@ -578,7 +578,62 @@ def generate_overdue_data(file1,due_date):
     }
     return data
 
+def generate_overdue_data_based_on_finace(file1,due_date):
+    converter_columns = ['销售单','发票','票号','电话']
+    converters = {c:lambda x: str(x) for c in converter_columns}
+    df = pd.read_html(file1,converters=converters)[0]
+    total_price = df.tail(1)['未付'].values[0]
+    total_price = float(total_price[1:])
+    df.drop(df.tail(1).index,inplace=True)
 
+    # convert two clumns to float, replace € sign.
+    df['金额'] = df['金额'].str.replace('€', '').astype(float)
+    df['未付'] = df['未付'].str.replace('€', '').astype(float)
+    # convert to date type
+    df['日期'] = pd.to_datetime(df['日期'])
+    df['承兑日期'] = df['承兑日期'].str[:10]
+    df['承兑日期'] = pd.to_datetime(df['承兑日期'])
+    df['day'] = df['承兑日期'].dt.day
+    df['month'] = df['承兑日期'].dt.month
+    df['year'] = df['承兑日期'].dt.year
+
+    # calculate due date
+    df['已逾期'] = df['承兑日期'] < pd.to_datetime(due_date)
+    df['逾期天数'] = (pd.to_datetime(due_date) - df['承兑日期']).dt.days
+    df = df[df['已逾期']]
+    overdue_price = df['未付'].sum().round(2)
+
+    df = df[(df.日期 < datetime.now() - pd.to_timedelta("10day")) | (df['日期']!=df['承兑日期'])]
+    overdue_price_2023 = df[df['year']==2023]['未付'].sum().round(2)
+    overdue_price_2024_month = list(df[df['year']==2024].groupby('month')['未付'].sum().round(2))
+    overdue_price_ignore_recent = df['未付'].sum().round(2)
+    overdue_price_over_365 = df[(df['逾期天数']>365)]['未付'].sum().round(2)
+
+    handler_overdue = df.groupby('经办人')['未付'].sum().reset_index().sort_values('未付', ascending=False)
+    df['日期'] = df['日期'].astype(str)
+    df['承兑日期'] = df['承兑日期'].astype(str)
+    with pd.ExcelWriter(os.path.join(settings.MEDIA_ROOT, 'OverDue.xlsx')) as writer:
+        df.to_excel(writer, sheet_name='逾期欠款', index=False),
+        handler_overdue.to_excel(writer, sheet_name='推销员-欠款',index=False)
+
+        handlers = df['经办人'].unique()
+        # Loop through each unique handler and create a separate sheet for each
+        for handler in handlers:
+            # Filter the DataFrame based on the handler
+            df_handler = df[df['经办人'] == handler].sort_values('逾期天数', ascending=False)
+            # Write the filtered DataFrame to a sheet named after the handler
+            # Ensure the handler is a string and replace any invalid characters that cannot be in a sheet name
+            safe_sheet_name = str(handler)#.replace(':', '').replace('\\', '').replace('/', '').replace('?', '').replace('*', '').replace('[', '').replace(']', '')
+            df_handler.to_excel(writer, sheet_name=safe_sheet_name, index=False)
+    data = {
+        "due_date": due_date,
+        "overdue_price": overdue_price,
+        "overdue_price_ignore_recent": overdue_price_ignore_recent,
+        "overdue_price_over_365": overdue_price_over_365,
+        "overdue_price_2023": overdue_price_2023,
+        "overdue_price_2024_month": overdue_price_2024_month,
+    }
+    return data
 
 '''
 Download File

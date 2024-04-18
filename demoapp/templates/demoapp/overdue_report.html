@@ -41,13 +41,14 @@
     </style>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body>
     <!-- Your report content goes here -->
     <h2> 逾期欠款报告</h2>
-    <h3>上传文件: 博讯 - 销售 - 详细查询 - 销售报表</h3>
-    <h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL</h4>
+    <h3>上传文件: 博讯 - 财务 - 财务查询 - 期间应收款</h3>
+    <h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3:时间类型:单据日期</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="file" name="myfile1">
@@ -60,10 +61,15 @@
 
     {% if data %}
     <h2> 截止日期: {{ data.due_date }}</h2>
-    <h3> 逾期总欠款: {{ data.overdue_price }}</h3>
-    <h3> 逾期超一年欠款: {{ data.overdue_price_over_365 }}</h3>
-    <h3> 逾期30天内欠款: {{ data.overdue_within_30_days }}</h3>
+    <h3> 逾期总欠款(包括近10天): {{ data.overdue_price }}</h3>
+    <h3> 逾期总欠款(忽略近10天): {{ data.overdue_price_ignore_recent }}</h3>
+    <h3> 2023年欠款(全年): {{ data.overdue_price_2023 }}</h3>
+    <h3> 2024年欠款(每月): {{ data.overdue_price_2024_month }} </h3>
+    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download Stock Value</a>
+    {% else %}
+    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download Previous Value</a>
     {% endif %}
+
 </body>
 
 {% endblock content %}
