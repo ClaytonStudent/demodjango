@@ -1,67 +1,22 @@
 {% extends 'demoapp/base.html' %}
 {% block content %}
 
-<head>
-    <style>
-        body {
-            background-image: none;
-            font-family: Arial, Helvetica, sans-serif;
-            text-align: center;
-            /* Remove the background image */
-            /* Add any other styles or background settings as needed */
-        }
+<!-- Your report content goes here -->
+<h1>Boson to Supergros</h1>
+<h3>文件: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile">
+    <button type="submit">Upload</button>
+</form>
 
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-            align-items: center;
+{% if data %}
+<p class="text-dark"> 处理完成,请下载文件 </p>
+<p class="text-dark"> Product Amount: {{data.records}} </p>
+<p class="text-dark"><a href="{% url 'download_file' %}?source=Boson_to_Supergross.csv">Download File</a></p>
+{% else %}
+{% endif %}
 
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-
-        p {
-            margin-top: 50px;
-            font-size: 18px;
-        }
-
-        button[type="submit"] {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 50px;
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Your report content goes here -->
-    <h1>Boson to Supergros</h1>
-    <h3>文件: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</h3>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="myfile">
-        <button type="submit">Upload</button>
-    </form>
-
-    {% if data %}
-    <p class="text-dark"> 处理完成,请下载文件 </p>
-    <p class="text-dark"> Product Amount: {{data.records}} </p>
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=Boson_to_Supergross.csv">Download File</a></p>
-    {% else %}
-    {% endif %}
-</body>
 
 
 {% endblock content %}

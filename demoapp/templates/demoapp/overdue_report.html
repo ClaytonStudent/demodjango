@@ -65,11 +65,8 @@
     <h3> 逾期总欠款(忽略近10天): {{ data.overdue_price_ignore_recent }}</h3>
     <h3> 2023年欠款(全年): {{ data.overdue_price_2023 }}</h3>
     <h3> 2024年欠款(每月): {{ data.overdue_price_2024_month }} </h3>
-    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download Stock Value</a>
-    {% else %}
-    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download Previous Value</a>
+    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download</a>
     {% endif %}
-
 </body>
 
 {% endblock content %}
