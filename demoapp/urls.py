@@ -3,6 +3,8 @@ from unicodedata import name
 from django.contrib import admin
 from django.urls import path,include
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("", views.index,name="index"),
@@ -20,4 +22,7 @@ urlpatterns = [
     path('boson_to_supergross/',views.boson_to_supergross,name='boson_to_supergross'),
     path('overdue_report/',views.overdue_report,name='overdue_report'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
