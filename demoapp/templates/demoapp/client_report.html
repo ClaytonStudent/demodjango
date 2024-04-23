@@ -1,66 +1,21 @@
 {% extends 'demoapp/base.html' %}
 {% block content %}
 
-<head>
-    <title>Please Upload Stock File</title>
-    <style>
-        body {
-            background-image: none;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+<!-- Your report content goes here -->
+<h3>文件1: 博讯 - 销售 - 详细查询 - 时间:(2023-01-01到当月月底) - 销售报表</h3>
+<h3>文件2: 博讯 - 销售 - 详细查询 - 时间:(2023-01-01到当月月底) - 选中利润 - 客户销售汇总</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile1">
+    <input type="file" name="myfile2">
+    <button type="submit">Upload</button>
+</form>
 
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 50px;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-
-        button[type="submit"] {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        p {
-            align-items: center;
-            margin-top: 50px;
-            font-size: 18px;
-        }
-    </style>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-</head>
-
-<body>
-    <!-- Your report content goes here -->
-    <h3>文件1: 博讯 - 销售 - 详细查询 - 时间:(2023-01-01到当月月底) - 销售报表</h3>
-    <h3>文件2: 博讯 - 销售 - 详细查询 - 时间:(2023-01-01到当月月底) - 选中利润 - 客户销售汇总</h3>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="myfile1">
-        <input type="file" name="myfile2">
-        <button type="submit">Upload</button>
-    </form>
-
-    {% if data %}
-    <p class="text-dark"> 处理完成,请下载文件 </p>
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ClientReport.xlsx">Download File</a></p>
-    {% else %}
-    <p class="text-dark"><a href="{% url 'download_file' %}?source=ClientReport.xlsx">Download Previous File</a></p>
-    {% endif %}
-</body>
+{% if data %}
+<p class="text-dark"> 处理完成,请下载文件 </p>
+<p class="text-dark"><a href="{% url 'download_file' %}?source=ClientReport.xlsx">Download File</a></p>
+{% else %}
+<p class="text-dark"><a href="{% url 'download_file' %}?source=ClientReport.xlsx">Download Previous File</a></p>
+{% endif %}
 
 {% endblock content %}

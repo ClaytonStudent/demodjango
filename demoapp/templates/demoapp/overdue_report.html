@@ -1,72 +1,27 @@
 {% extends 'demoapp/base.html' %}
 {% block content %}
 
-<head>
-    <title>Please Upload Stock File</title>
-    <style>
-        body {
-            background-image: none;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+<!-- Your report content goes here -->
+<h2> 逾期欠款报告</h2>
+<h3>上传文件: 博讯 - 财务 - 财务查询 - 期间应收款</h3>
+<h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3:时间类型:单据日期</h4>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile1">
 
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
+    <label for="source1">截止日期:</label>
+    <input type="date" name="source1" placeholder="yyyy-mm-dd">
+    <p> </p>
+    <button type="submit">Upload</button>
+</form>
 
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 50px;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-
-        button[type="submit"] {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        p {
-            margin-top: 50px;
-            font-size: 18px;
-        }
-    </style>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-
-<body>
-    <!-- Your report content goes here -->
-    <h2> 逾期欠款报告</h2>
-    <h3>上传文件: 博讯 - 财务 - 财务查询 - 期间应收款</h3>
-    <h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3:时间类型:单据日期</h4>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="myfile1">
-
-        <label for="source1">截止日期:</label>
-        <input type="date" name="source1" placeholder="yyyy-mm-dd">
-        <p> </p>
-        <button type="submit">Upload</button>
-    </form>
-
-    {% if data %}
-    <h2> 截止日期: {{ data.due_date }}</h2>
-    <h3> 逾期总欠款(包括近10天): {{ data.overdue_price }}</h3>
-    <h3> 逾期总欠款(忽略近10天): {{ data.overdue_price_ignore_recent }}</h3>
-    <h3> 2023年欠款(全年): {{ data.overdue_price_2023 }}</h3>
-    <h3> 2024年欠款(每月): {{ data.overdue_price_2024_month }} </h3>
-    <a href="{% url 'download_file' %}?source=OverDue.xlsx">Download</a>
-    {% endif %}
-</body>
+{% if data %}
+<h2> 截止日期: {{ data.due_date }}</h2>
+<h3> 逾期总欠款(包括近10天): {{ data.overdue_price }}</h3>
+<h3> 逾期总欠款(忽略近10天): {{ data.overdue_price_ignore_recent }}</h3>
+<h3> 2023年欠款(全年): {{ data.overdue_price_2023 }}</h3>
+<h3> 2024年欠款(每月): {{ data.overdue_price_2024_month }} </h3>
+<a href="{% url 'download_file' %}?source=OverDue.xlsx">Download</a>
+{% endif %}
 
 {% endblock content %}

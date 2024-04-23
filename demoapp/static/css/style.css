@@ -25,3 +25,69 @@ body {
 .button:hover {
     background-color: #0056b3;
 }
+
+h2 {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    align-items: center;
+
+}
+
+input[type="file"] {
+    margin-bottom: 20px;
+}
+
+p {
+    align-items: center;
+    margin-top: 50px;
+    font-size: 18px;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+}
+
+h4 {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+th,
+td {
+
+    text-align: center;
+    border: 1px solid black;
+    padding: 2px;
+}
+
+.container {
+    display: flex;
+    /* Use flexbox to arrange items side by side */
+    align-items: flex-start;
+    /* Align items at the top of the container */
+}
+
+.map {
+    flex: 1;
+    /* Make the map take up all available horizontal space */
+    margin-right: 20px;
+    /* Add some margin for spacing */
+}
+
+.table {
+    flex: 0.5;
+    /* Make the table take up all available horizontal space */
+}

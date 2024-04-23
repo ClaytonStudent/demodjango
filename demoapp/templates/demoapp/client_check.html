@@ -1,62 +1,18 @@
 {% extends 'demoapp/base.html' %}
 {% block content %}
 
-<head>
-    <title>Please Upload Stock File</title>
-    <style>
-        body {
-            background-image: none;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 50px;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-
-        button[type="submit"] {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        p {
-            margin-top: 50px;
-            font-size: 18px;
-        }
-    </style>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-</head>
-
-<body>
-    <!-- Your report content goes here -->
-    {% if data %}
-    <h1>客户检查</h1>
-    <p>客户数量 {{data.client_number}}</p>
-    <p>下列客户地址信息缺失：</p>
-    <p class="text-dark"> {{data.client_taxnumber_missing}} </p>
-    <p>下列客户经办人信息缺失：</p>
-    <p class="text-dark"> {{data.client_salesman_missing}} </p>
-    <p>下列客户税号信息缺失：</p>
-    <p class="text-dark"> {{data.client_taxnumber_missing}} </p>
-    {% else %}
-    <p class="text-dark"> No Data </p>
-    {% endif %}
-</body>
+<!-- Your report content goes here -->
+{% if data %}
+<h1>客户检查</h1>
+<p>客户数量 {{data.client_number}}</p>
+<p>下列客户地址信息缺失：</p>
+<p class="text-dark"> {{data.client_taxnumber_missing}} </p>
+<p>下列客户经办人信息缺失：</p>
+<p class="text-dark"> {{data.client_salesman_missing}} </p>
+<p>下列客户税号信息缺失：</p>
+<p class="text-dark"> {{data.client_taxnumber_missing}} </p>
+{% else %}
+<p class="text-dark"> No Data </p>
+{% endif %}
 
 {% endblock content %}

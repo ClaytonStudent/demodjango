@@ -1,67 +1,23 @@
 {% extends 'demoapp/base.html' %}
 {% block content %}
 
-<head>
-    <title>Please Upload Stock File</title>
-    <style>
-        body {
-            background-image: none;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+<!-- Your report content goes here -->
+<h3>文件1: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</h3>
+<h3>文件2: 博讯 - 销售 - 详细查询 - 库存</h3>
+<h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价</h4>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile1">
+    <input type="file" name="myfile2">
+    <button type="submit">Upload</button>
+</form>
 
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 50px;
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
-
-        button[type="submit"] {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        p {
-            margin-top: 50px;
-            font-size: 18px;
-        }
-    </style>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-</head>
-
-<body>
-    <!-- Your report content goes here -->
-    <h3>文件1: 博讯 - 销售 - 详细查询 - 产品批量操作 - 产品导出</h3>
-    <h3>文件2: 博讯 - 销售 - 详细查询 - 库存</h3>
-    <h4>注意: 1.开始时间: 2023-01-01, 2.文档类型:EXCEL, 3.勾选: 平均成本/销售价/采购价</h4>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="myfile1">
-        <input type="file" name="myfile2">
-        <button type="submit">Upload</button>
-    </form>
-
-    {% if data %}
-    <h3> 库存税前总价值: {{ data.stock_value_without_iva }}</h3>
-    <h3> 库存税后总价值: {{ data.stock_value }}</h3>
-    <a href="{% url 'download_file' %}?source=StockValue.txt">Download Stock Value</a>
-    {% else %}
-    <a href="{% url 'download_file' %}?source=StockValue.txt">Download Previous Value</a>
-    {% endif %}
-</body>
+{% if data %}
+<h3> 库存税前总价值: {{ data.stock_value_without_iva }}</h3>
+<h3> 库存税后总价值: {{ data.stock_value }}</h3>
+<a href="{% url 'download_file' %}?source=StockValue.txt">Download Stock Value</a>
+{% else %}
+<a href="{% url 'download_file' %}?source=StockValue.txt">Download Previous Value</a>
+{% endif %}
 
 {% endblock content %}
