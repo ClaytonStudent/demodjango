@@ -84,12 +84,15 @@ def analysis_stock_value_report(filename1,filename2):
 def get_product(product_file):
     df_product = pd.read_csv(product_file)
     df_product.drop(df_product.tail(1).index,inplace=True)
+    df_product = df_product[df_product['valid_grade']>=1]
     df_product = df_product[['product_model','product_description','stockpile_quantity','sale_tax_rate','stock_price']]
     return df_product
 def get_stock(df):
     #df = pd.read_html(stock_file)[0]
     # drop the last 1 rows
     df.drop(df.tail(1).index,inplace=True)
+    # drop the name empty product
+    df = df[~df['品名'].isna()]
     # drop the under 0 stock
     df = df[df['主仓库库存']>0]
     # drop LOOK OCCHIALI EXPO
