@@ -21,6 +21,7 @@ urlpatterns = [
     path('btr_express_report/',views.brt_express_report,name='btr_express_report'),
     path('boson_to_supergross/',views.boson_to_supergross,name='boson_to_supergross'),
     path('overdue_report/',views.overdue_report,name='overdue_report'),
+    path('sales_chart_report/',views.sales_chart_report,name='sales_chart_report'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

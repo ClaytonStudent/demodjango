@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'demoapp',
     'crispy_forms',
     'crispy_bootstrap5',
+    'chartjs',
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = 'bootstrap5'

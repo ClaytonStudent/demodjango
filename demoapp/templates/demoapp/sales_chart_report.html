@@ -1,0 +1,66 @@
+{% extends 'demoapp/base.html' %}
+{% block content %}
+
+<!-- Your report content goes here -->
+<h2> 销售图表</h2>
+<h3>上传文件: 博讯 - 销售 - 销售列表 - Adds on</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile1">
+    <p> </p>
+    <button type="submit">Upload</button>
+</form>
+
+{% if data %}
+<h2> 历史日期: {{ data.history_date }}</h2>
+<style>
+    #chart-container {
+        width: 80%;
+        /* Define the container width */
+        height: 400px;
+        /* Define the container height */
+        margin: auto;
+        /* Center the container */
+    }
+</style>
+<div id="chart-container">
+    <canvas id="myChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('myChart');
+
+    const history_date = JSON.parse('{{ data.history_date|escapejs }}');
+    const history_date_sales_order_quantity = JSON.parse('{{ data.history_date_sales_order_quantity|escapejs }}');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: history_date,
+            datasets: [{
+                label: '# 销售单',
+                data: history_date_sales_order_quantity,
+                borderWidth: 1,
+                yAxisID: 'y-axis-1',
+            },
+            {
+                label: '# 销售额',
+                data: [200, 300, 400, 500, 600, 700, 900],
+                borderWidth: 1,
+                yAxisID: 'y-axis-2',
+            }]
+        },
+        options: {
+            y: {
+                'y-axis-2': {
+                    position: 'right',
+                    beginAtZero: true,
+                },
+            }
+        }
+    });
+</script>
+
+<a href="{% url 'download_file' %}?source=OverDue.xlsx">Download</a>
+{% endif %}
+
+{% endblock content %}

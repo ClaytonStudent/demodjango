@@ -638,6 +638,50 @@ def generate_overdue_data_based_on_finace(file1,due_date):
     }
     return data
 
+
+'''
+9. Sales Chart Report
+'''
+def sales_chart_report(request):
+    if request.method == 'POST':
+        myfile1 = request.FILES['myfile1']
+        fs = FileSystemStorage()
+        if fs.exists(myfile1.name):
+            fs.delete(myfile1.name)
+        filename1 = fs.save(myfile1.name, myfile1)
+        data = analysis_sales_chart_report(filename1)
+        return render(request, 'demoapp/sales_chart_report.html', {'data':data})
+    return render(request, 'demoapp/sales_chart_report.html')
+
+def analysis_sales_chart_report(filename1):
+    file1 = os.path.join(settings.MEDIA_ROOT, filename1)
+    data = generate_sales_chart_report(file1)
+    return data
+
+def generate_sales_chart_report(file1):
+    df = pd.read_excel(file1)
+    # drop columns
+    df = df.drop(df.columns[[0,2,3,4,6,9,11,22,23,25]],axis = 1)
+    # rename columns
+    rename_cols = {'↓ ↓ 销售单 [更多]':'销售单','↓ 客户':'客户','↓ 制单人':'制单人','↓ 经办人':'经办人','↓ 日期':'日期'}
+    df.rename(columns=rename_cols,inplace=True)
+    # extract customer id and name
+    df['客户编号'] = df['客户'].str.extract(r'\[(.*?)\]')
+    df['客户'] = df['客户'].str.replace(r'\[.*?\]\s*', '', regex=True)
+    # reorder columns
+    cols = df.columns.tolist()
+    cols.insert(1, cols.pop(cols.index('客户编号')))
+    df = df[cols]
+    df['日期'] = df['日期'].astype(str)
+    history_date = df.日期.value_counts().sort_index().index.to_list()
+    history_date_sales_order_quantity = df.日期.value_counts().sort_index().to_list()
+    data = {
+        'template':json.dumps([12, 19, 3, 5, 2, 3]),
+        'history_date': json.dumps(history_date),
+        'history_date_sales_order_quantity': json.dumps(history_date_sales_order_quantity),
+            }
+    return data
+
 '''
 Download File
 '''
